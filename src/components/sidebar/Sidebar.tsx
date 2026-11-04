@@ -3,10 +3,9 @@ import { useStore, type View } from '@/stores/chatStore'
 import { Icon } from '@/components/common/Icon'
 import { useApp } from '@/stores/settingsStore'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { timeAgo } from '@/lib/format'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Confirm } from '@/components/common/Confirm'
+import { ChatListItem } from '@/components/sidebar/ChatListItem'
 
 const NAV: { v: View; icon: string; label: string }[] = [
   { v: 'chat', icon: 'chat', label: 'Chat' },
@@ -23,14 +22,10 @@ export function Sidebar() {
   const version = useStore((s) => s.version)
   const running = useStore((s) => s.running)
   const newChat = useStore((s) => s.newChat)
-  const openChat = useStore((s) => s.openChat)
-  const deleteChat = useStore((s) => s.deleteChat)
-  const patchChat = useStore((s) => s.patchChat)
   const setView = useStore((s) => s.setView)
   const collapsed = useApp((s) => s.sidebarCollapsed)
   const setApp = useApp((s) => s.set)
   const [q, setQ] = useState('')
-  const [editing, setEditing] = useState<string | null>(null)
 
   const list = useMemo(() => {
     const t = q.toLowerCase()
@@ -91,52 +86,7 @@ export function Sidebar() {
       <Input placeholder="Search chats…" value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="chatlist">
         {list.map((c) => (
-          <div
-            key={c.id}
-            className={'chatitem' + (c.id === activeId && view === 'chat' ? ' active' : '')}
-            onClick={() => openChat(c.id)}
-          >
-            {editing === c.id ? (
-              <input
-                autoFocus
-                className="input"
-                defaultValue={c.title}
-                onClick={(e) => e.stopPropagation()}
-                onBlur={(e) => {
-                  patchChat(c.id, () => ({ title: e.target.value || c.title }))
-                  setEditing(null)
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === 'Escape') (e.target as HTMLInputElement).blur()
-                }}
-              />
-            ) : (
-              <>
-                <span className="title">
-                  {c.pinned && <Icon n="pin" size={12} />} {c.title}
-                </span>
-                <span className="when">{timeAgo(c.updatedAt)}</span>
-                <span className="acts" onClick={(e) => e.stopPropagation()}>
-                  <button title="Pin" onClick={() => patchChat(c.id, () => ({ pinned: !c.pinned }))}>
-                    <Icon n="pin" size={13} />
-                  </button>
-                  <button title="Rename" onClick={() => setEditing(c.id)}>
-                    <Icon n="edit" size={13} />
-                  </button>
-                  <Confirm
-                    title="Delete this chat?"
-                    description="The conversation is removed permanently."
-                    action="Delete"
-                    onConfirm={() => deleteChat(c.id)}
-                  >
-                    <button title="Delete">
-                      <Icon n="trash" size={13} />
-                    </button>
-                  </Confirm>
-                </span>
-              </>
-            )}
-          </div>
+          <ChatListItem key={c.id} chat={c} active={c.id === activeId && view === 'chat'} />
         ))}
         {!list.length && <div className="muted pad">No chats</div>}
       </div>

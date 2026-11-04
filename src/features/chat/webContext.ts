@@ -1,5 +1,4 @@
 import type { Source } from '@/types'
-import { useApp } from '@/stores/settingsStore'
 import { webSearch } from '@/services/webApi'
 import { searchQueryPrompt } from './prompts'
 import { quickChat } from './quickChat'
@@ -51,12 +50,11 @@ interface WebInput {
 export async function applyWebContext({ host, model, keepAlive, history, msgs, signal }: WebInput): Promise<WebResult> {
   const lastUser = msgs.map((m) => m.role).lastIndexOf('user')
   if (lastUser < 0) return {}
-  const app = useApp.getState()
   const userTurns = history.filter((m) => m.role === 'user')
   let searchQuery: string | undefined
   try {
     let q = msgs[lastUser].content.trim()
-    if (app.searchRewrite && userTurns.length > 1) {
+    if (host.searchRewrite() && userTurns.length > 1) {
       host.setStatus('Writing search query…')
       const convo = history
         .slice(-6)

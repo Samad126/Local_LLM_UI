@@ -13,6 +13,8 @@ export interface ChatHost {
   meta(model: string): ModelMeta | undefined
   prompts(): Prompt[]
   webMode(): WebMode
+  /** Whether follow-up questions are rewritten into a standalone search query first. */
+  searchRewrite(): boolean
   isStreaming(): boolean
   /** Mark a run as started (or finished, with nulls). */
   setRun(streamingId: string | null, abort: AbortController | null): void

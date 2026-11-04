@@ -83,6 +83,7 @@ export const useStore = create<State>((set, get) => {
     meta: (model) => get().meta[model],
     prompts: () => get().prompts,
     webMode: () => get().webMode,
+    searchRewrite: () => useApp.getState().searchRewrite,
     isStreaming: () => !!get().streamingId,
     setRun: (streamingId, abort) => set({ streamingId, abort }),
     setStatus: (status) => set({ status }),
