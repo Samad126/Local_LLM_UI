@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import { parseChatImport } from '@/lib/importChats'
-import { useApp } from '@/stores/settingsStore'
+import { useApp, type SearchEngine, type Theme } from '@/stores/settingsStore'
 import { useStore } from '@/stores/chatStore'
 import { db } from '@/services/db'
 import { download } from '@/lib/download'
 import { Button } from '@/components/ui/button'
-import { Pick, Check, Range } from '@/components/common/Fields'
+import { Pick, Check, Range, THINK_OPTIONS } from '@/components/common/Fields'
+import type { ThinkMode } from '@/types'
 import { Confirm } from '@/components/common/Confirm'
 import { Input } from '@/components/ui/input'
 
@@ -43,7 +44,7 @@ export function AppSettings() {
             Theme
             <Pick
               value={app.theme}
-              onChange={(v) => app.set({ theme: v as any })}
+              onChange={(v) => app.set({ theme: v as Theme })}
               options={[
                 { value: 'dark', label: 'Dark' },
                 { value: 'light', label: 'Light' },
@@ -89,12 +90,8 @@ export function AppSettings() {
             Thinking (default for new chats)
             <Pick
               value={app.defaults.think}
-              onChange={(v) => app.set({ defaults: { ...app.defaults, think: v as any } })}
-              options={[
-                { value: 'default', label: 'Model default' },
-                { value: 'on', label: 'On' },
-                { value: 'off', label: 'Off (faster)' },
-              ]}
+              onChange={(v) => app.set({ defaults: { ...app.defaults, think: v as ThinkMode } })}
+              options={THINK_OPTIONS}
             />
             <small className="text-muted-foreground">
               Only for models that support thinking. Each chat can override it in its Settings panel.
@@ -132,7 +129,7 @@ export function AppSettings() {
             Engine
             <Pick
               value={app.searchEngine}
-              onChange={(v) => app.set({ searchEngine: v as any })}
+              onChange={(v) => app.set({ searchEngine: v as SearchEngine })}
               options={[
                 { value: 'ddg', label: 'DuckDuckGo (no key)' },
                 { value: 'searxng', label: 'SearXNG (self-hosted)' },

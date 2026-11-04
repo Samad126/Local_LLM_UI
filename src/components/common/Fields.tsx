@@ -1,3 +1,4 @@
+import type { ThinkMode } from '@/types'
 import type { ReactNode } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -72,3 +73,13 @@ export function Range({
     <Slider className="my-2" value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0])} />
   )
 }
+
+export const THINK_OPTIONS: { value: ThinkMode; label: string }[] = [
+  { value: 'default', label: 'Model default' },
+  { value: 'on', label: 'On' },
+  { value: 'off', label: 'Off (faster)' },
+]
+export const SEARCH_ENGINE_OPTIONS = [
+  { value: 'ddg', label: 'DuckDuckGo (no key)' },
+  { value: 'searxng', label: 'SearXNG (self-hosted)' },
+]

@@ -7,7 +7,8 @@ import { Icon } from '@/components/common/Icon'
 import { PromptDialog } from '@/components/common/PromptDialog'
 import { Button } from '@/components/ui/button'
 import { useResizable } from '@/components/common/Resizer'
-import { Pick, Check, Range } from '@/components/common/Fields'
+import { Pick, Check, Range, THINK_OPTIONS } from '@/components/common/Fields'
+import type { ThinkMode } from '@/types'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -69,7 +70,7 @@ export function SettingsPanel() {
               options={presets.map((p) => ({ value: p.id, label: p.name }))}
               onChange={(id) => {
                 const p = presets.find((x) => x.id === id)
-                if (p) updateSettings(JSON.parse(JSON.stringify(p.settings)))
+                if (p) updateSettings(structuredClone(p.settings))
               }}
             />
             <PromptDialog title="Save preset" label="Preset name" action="Save" onSubmit={savePreset}>
@@ -116,12 +117,8 @@ export function SettingsPanel() {
           <Pick
             disabled={!hasCap(m, 'thinking')}
             value={s.think}
-            onChange={(v) => updateSettings({ think: v as any })}
-            options={[
-              { value: 'default', label: 'Model default' },
-              { value: 'on', label: 'On' },
-              { value: 'off', label: 'Off (faster)' },
-            ]}
+            onChange={(v) => updateSettings({ think: v as ThinkMode })}
+            options={THINK_OPTIONS}
           />
           {!hasCap(m, 'thinking') && <small className="muted">Not supported by this model</small>}
         </label>
@@ -217,7 +214,7 @@ export function SettingsPanel() {
           >
             Reset to model defaults
           </Button>
-          <Button variant="outline" size="sm" onClick={() => app.set({ defaults: JSON.parse(JSON.stringify(s)) })}>
+          <Button variant="outline" size="sm" onClick={() => app.set({ defaults: structuredClone(s) })}>
             Use for new chats
           </Button>
         </div>

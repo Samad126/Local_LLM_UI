@@ -12,13 +12,16 @@ export const BASE_SETTINGS: ChatSettings = {
   format: '',
 }
 
+export type Theme = 'dark' | 'light' | 'system'
+export type SearchEngine = 'ddg' | 'searxng'
+
 interface AppState {
   host: string
-  theme: 'dark' | 'light' | 'system'
+  theme: Theme
   fontSize: number
   sendOnEnter: boolean
   showStats: boolean
-  searchEngine: 'ddg' | 'searxng'
+  searchEngine: SearchEngine
   searxUrl: string
   searchResults: number
   searchFetchPages: boolean

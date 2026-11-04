@@ -118,7 +118,7 @@ export function Library() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  updateSettings(JSON.parse(JSON.stringify(p.settings)))
+                  updateSettings(structuredClone(p.settings))
                   setView('chat')
                 }}
               >
