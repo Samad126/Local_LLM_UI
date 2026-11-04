@@ -25,7 +25,9 @@ export function ChatView() {
 
   // Follow the stream, but only when content actually changed and coalesced into one frame.
   const tail = chat?.messages[chat.messages.length - 1]
-  const tailKey = chat ? `${chat.messages.length}:${tail?.content.length}:${tail?.thinking?.length}:${tail?.toolCalls?.length}` : ''
+  const tailKey = chat
+    ? `${chat.messages.length}:${tail?.content.length}:${tail?.thinking?.length}:${tail?.toolCalls?.length}`
+    : ''
   useEffect(() => {
     if (!stick.current) return
     const id = requestAnimationFrame(() => {
@@ -34,7 +36,10 @@ export function ChatView() {
     })
     return () => cancelAnimationFrame(id)
   }, [tailKey])
-  useEffect(() => { stick.current = true; force((x) => x + 1) }, [chat?.id])
+  useEffect(() => {
+    stick.current = true
+    force((x) => x + 1)
+  }, [chat?.id])
 
   if (!chat) return null
   const m = meta[chat.settings.model]
@@ -66,24 +71,64 @@ export function ChatView() {
           {used > 0 && (
             <div className="ctxmeter" title={`${used} / ${ctx || '?'} tokens`}>
               <div style={{ width: pct + '%' }} className={pct > 85 ? 'warn' : ''} />
-              <span>{used}{ctx ? ` / ${ctx}` : ''}</span>
+              <span>
+                {used}
+                {ctx ? ` / ${ctx}` : ''}
+              </span>
             </div>
           )}
           <ArtifactsMenu chat={chat} />
-          <Button variant="ghost" size="sm" title="Compact conversation: summarize older messages to free context (or type /compact)" disabled={!!streamingId || chat.messages.length < 3} onClick={() => compact()}><Icon n="refresh" /> Compact</Button>
-          <Button variant="ghost" size="sm" title="Export Markdown" onClick={exportMd}><Icon n="download" /></Button>
-          <Button variant="ghost" size="sm" title="Export JSON" onClick={() => download(`${chat.title}.json`, JSON.stringify(chat, null, 2))}><Icon n="upload" /></Button>
-          <Button variant={drawer ? 'secondary' : 'ghost'} size="sm" title="Settings (Ctrl+,)" onClick={() => toggleDrawer()}><Icon n="sliders" /> Settings</Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Compact conversation: summarize older messages to free context (or type /compact)"
+            disabled={!!streamingId || chat.messages.length < 3}
+            onClick={() => compact()}
+          >
+            <Icon n="refresh" /> Compact
+          </Button>
+          <Button variant="ghost" size="sm" title="Export Markdown" onClick={exportMd}>
+            <Icon n="download" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Export JSON"
+            onClick={() => download(`${chat.title}.json`, JSON.stringify(chat, null, 2))}
+          >
+            <Icon n="upload" />
+          </Button>
+          <Button
+            variant={drawer ? 'secondary' : 'ghost'}
+            size="sm"
+            title="Settings (Ctrl+,)"
+            onClick={() => toggleDrawer()}
+          >
+            <Icon n="sliders" /> Settings
+          </Button>
         </header>
         <div
-          className="scroller" ref={scroller}
-          onWheel={(e) => { if (e.deltaY < 0) stick.current = false }}
-          onTouchMove={() => { const el = scroller.current; if (el && el.scrollHeight - el.scrollTop - el.clientHeight > 24) stick.current = false }}
-          onKeyDown={(e) => { if (['ArrowUp', 'PageUp', 'Home'].includes(e.key)) stick.current = false }}
-          onScroll={(e) => { const el = e.currentTarget; if (el.scrollHeight - el.scrollTop - el.clientHeight < 24) stick.current = true }}
+          className="scroller"
+          ref={scroller}
+          onWheel={(e) => {
+            if (e.deltaY < 0) stick.current = false
+          }}
+          onTouchMove={() => {
+            const el = scroller.current
+            if (el && el.scrollHeight - el.scrollTop - el.clientHeight > 24) stick.current = false
+          }}
+          onKeyDown={(e) => {
+            if (['ArrowUp', 'PageUp', 'Home'].includes(e.key)) stick.current = false
+          }}
+          onScroll={(e) => {
+            const el = e.currentTarget
+            if (el.scrollHeight - el.scrollTop - el.clientHeight < 24) stick.current = true
+          }}
         >
           {online === false && (
-            <div className="banner bad">Can't reach Ollama. Start it with <code>ollama serve</code> or check the host in App settings.</div>
+            <div className="banner bad">
+              Can't reach Ollama. Start it with <code>ollama serve</code> or check the host in App settings.
+            </div>
           )}
           {chat.messages.length === 0 ? (
             <div className="empty">
@@ -95,7 +140,12 @@ export function ChatView() {
               {chat.messages.map((msg, i) => (
                 <Fragment key={msg.id}>
                   {chat.summary && i === (chat.summaryCount ?? 0) && compactNote()}
-                  <Message msg={msg} streaming={streamingId === chat.id && i === chat.messages.length - 1} isLast={i === chat.messages.length - 1} ask={chat.messages[i - 1]?.role === 'user' ? chat.messages[i - 1].content : ''} />
+                  <Message
+                    msg={msg}
+                    streaming={streamingId === chat.id && i === chat.messages.length - 1}
+                    isLast={i === chat.messages.length - 1}
+                    ask={chat.messages[i - 1]?.role === 'user' ? chat.messages[i - 1].content : ''}
+                  />
                 </Fragment>
               ))}
               {chat.summary && (chat.summaryCount ?? 0) >= chat.messages.length && compactNote(true)}
@@ -109,4 +159,3 @@ export function ChatView() {
     </div>
   )
 }
-

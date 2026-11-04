@@ -6,20 +6,48 @@ import { Slider } from '@/components/ui/slider'
 const NONE = '__none__'
 
 // shadcn Select with a flat options list. value '' shows the placeholder (Radix forbids empty item values).
-export function Pick({ value, onChange, options, placeholder, disabled }: {
-  value: string; onChange: (v: string) => void; options: { value: string; label: ReactNode }[]; placeholder?: string; disabled?: boolean
+export function Pick({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: ReactNode }[]
+  placeholder?: string
+  disabled?: boolean
 }) {
   return (
-    <Select value={value === '' ? undefined : value} onValueChange={(v) => v !== NONE && onChange(v)} disabled={disabled}>
-      <SelectTrigger className="w-full"><SelectValue placeholder={placeholder} /></SelectTrigger>
+    <Select
+      value={value === '' ? undefined : value}
+      onValueChange={(v) => v !== NONE && onChange(v)}
+      disabled={disabled}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
       <SelectContent>
-        {options.map((o) => <SelectItem key={o.value || NONE} value={o.value || NONE}>{o.label}</SelectItem>)}
+        {options.map((o) => (
+          <SelectItem key={o.value || NONE} value={o.value || NONE}>
+            {o.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   )
 }
 
-export function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: ReactNode }) {
+export function Check({
+  checked,
+  onChange,
+  children,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  children: ReactNode
+}) {
   return (
     <label className="check">
       <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} /> {children}
@@ -27,6 +55,20 @@ export function Check({ checked, onChange, children }: { checked: boolean; onCha
   )
 }
 
-export function Range({ value, min, max, step = 1, onChange }: { value: number; min: number; max: number; step?: number; onChange: (v: number) => void }) {
-  return <Slider className="my-2" value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0])} />
+export function Range({
+  value,
+  min,
+  max,
+  step = 1,
+  onChange,
+}: {
+  value: number
+  min: number
+  max: number
+  step?: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <Slider className="my-2" value={[value]} min={min} max={max} step={step} onValueChange={(v) => onChange(v[0])} />
+  )
 }

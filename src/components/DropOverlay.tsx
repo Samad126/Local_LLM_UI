@@ -10,21 +10,48 @@ export function DropOverlay() {
 
   useEffect(() => {
     const hasFiles = (e: DragEvent) => !!e.dataTransfer && [...e.dataTransfer.types].includes('Files')
-    const enter = (e: DragEvent) => { if (!hasFiles(e)) return; e.preventDefault(); depth.current++; setOver(true) }
-    const overEv = (e: DragEvent) => { if (!hasFiles(e)) return; e.preventDefault(); e.dataTransfer!.dropEffect = 'copy' }
-    const leave = (e: DragEvent) => { if (!hasFiles(e)) return; depth.current = Math.max(0, depth.current - 1); if (!depth.current) setOver(false) }
+    const enter = (e: DragEvent) => {
+      if (!hasFiles(e)) return
+      e.preventDefault()
+      depth.current++
+      setOver(true)
+    }
+    const overEv = (e: DragEvent) => {
+      if (!hasFiles(e)) return
+      e.preventDefault()
+      e.dataTransfer!.dropEffect = 'copy'
+    }
+    const leave = (e: DragEvent) => {
+      if (!hasFiles(e)) return
+      depth.current = Math.max(0, depth.current - 1)
+      if (!depth.current) setOver(false)
+    }
     const drop = (e: DragEvent) => {
       if (!hasFiles(e)) return
-      e.preventDefault(); depth.current = 0; setOver(false)
+      e.preventDefault()
+      depth.current = 0
+      setOver(false)
       const files = [...e.dataTransfer!.files]
-      if (files.length) { useStore.getState().setView('chat'); setTimeout(() => window.dispatchEvent(new CustomEvent('app:files', { detail: files })), 0) }
+      if (files.length) {
+        useStore.getState().setView('chat')
+        setTimeout(() => window.dispatchEvent(new CustomEvent('app:files', { detail: files })), 0)
+      }
     }
-    const end = () => { depth.current = 0; setOver(false) }
-    window.addEventListener('dragenter', enter); window.addEventListener('dragover', overEv)
-    window.addEventListener('dragleave', leave); window.addEventListener('drop', drop); window.addEventListener('dragend', end)
+    const end = () => {
+      depth.current = 0
+      setOver(false)
+    }
+    window.addEventListener('dragenter', enter)
+    window.addEventListener('dragover', overEv)
+    window.addEventListener('dragleave', leave)
+    window.addEventListener('drop', drop)
+    window.addEventListener('dragend', end)
     return () => {
-      window.removeEventListener('dragenter', enter); window.removeEventListener('dragover', overEv)
-      window.removeEventListener('dragleave', leave); window.removeEventListener('drop', drop); window.removeEventListener('dragend', end)
+      window.removeEventListener('dragenter', enter)
+      window.removeEventListener('dragover', overEv)
+      window.removeEventListener('dragleave', leave)
+      window.removeEventListener('drop', drop)
+      window.removeEventListener('dragend', end)
     }
   }, [])
 
@@ -32,7 +59,9 @@ export function DropOverlay() {
   return (
     <div className="dropzone" aria-hidden>
       <div className="dropcard">
-        <span className="dropicon"><FileUp size={34} strokeWidth={1.6} /></span>
+        <span className="dropicon">
+          <FileUp size={34} strokeWidth={1.6} />
+        </span>
         <h2>Drop files to add them to the chat</h2>
         <p>PDFs, text and code files{view === 'chat' ? ', and images for vision models' : ''}</p>
       </div>

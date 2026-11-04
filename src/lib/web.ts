@@ -1,6 +1,11 @@
 import { useApp } from '../appStore'
 
-export interface Source { title: string; url: string; snippet?: string; text?: string }
+export interface Source {
+  title: string
+  url: string
+  snippet?: string
+  text?: string
+}
 
 async function get<T>(path: string, params: Record<string, string>, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`/api/web/${path}?` + new URLSearchParams(params), { signal })
@@ -15,11 +20,15 @@ export async function webSearch(query: string, signal?: AbortSignal): Promise<So
   if (a.searchEngine === 'searxng') params.searx = a.searxUrl
   const { results } = await get<{ results: Source[] }>('search', params, signal)
   if (a.searchFetchPages) {
-    await Promise.all(results.map(async (r) => {
-      try {
-        r.text = (await get<{ text: string }>('fetch', { url: r.url, max: String(a.searchPageChars) }, signal)).text
-      } catch { /* fall back to snippet */ }
-    }))
+    await Promise.all(
+      results.map(async (r) => {
+        try {
+          r.text = (await get<{ text: string }>('fetch', { url: r.url, max: String(a.searchPageChars) }, signal)).text
+        } catch {
+          /* fall back to snippet */
+        }
+      }),
+    )
   }
   return results
 }
@@ -29,7 +38,12 @@ export function shouldSearch(text: string): boolean {
   const t = text.trim().toLowerCase()
   if (t.length < 8 || t.startsWith('/')) return false
   if (/\b(search|google|look ?up|browse|web ?search|find online|on the (web|internet))\b/.test(t)) return true
-  if (/\b(latest|newest|recent(ly)?|today|tonight|yesterday|this (week|month|year)|right now|currently|breaking|news|headlines|score|weather|forecast|stock|price of|exchange rate|release date|released|who won|trending)\b/.test(t)) return true
+  if (
+    /\b(latest|newest|recent(ly)?|today|tonight|yesterday|this (week|month|year)|right now|currently|breaking|news|headlines|score|weather|forecast|stock|price of|exchange rate|release date|released|who won|trending)\b/.test(
+      t,
+    )
+  )
+    return true
   if (/\b(20(2[4-9]|3\d))\b/.test(t)) return true
   if (/https?:\/\//.test(t)) return false
   return false

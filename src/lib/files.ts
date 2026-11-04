@@ -1,9 +1,11 @@
 import type { Attachment } from '../types'
 
-const TEXT_EXT = /\.(txt|md|markdown|csv|tsv|json|jsonl|xml|html?|css|scss|js|jsx|ts|tsx|mjs|py|rb|go|rs|java|kt|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|yaml|yml|toml|ini|cfg|conf|env|log|tex|rst|swift|lua|r|dart|vue|svelte)$/i
+const TEXT_EXT =
+  /\.(txt|md|markdown|csv|tsv|json|jsonl|xml|html?|css|scss|js|jsx|ts|tsx|mjs|py|rb|go|rs|java|kt|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|yaml|yml|toml|ini|cfg|conf|env|log|tex|rst|swift|lua|r|dart|vue|svelte)$/i
 
 export const isImage = (f: File) => f.type.startsWith('image/')
-export const isSupportedDoc = (f: File) => f.type === 'application/pdf' || f.type.startsWith('text/') || TEXT_EXT.test(f.name) || f.type === 'application/json'
+export const isSupportedDoc = (f: File) =>
+  f.type === 'application/pdf' || f.type.startsWith('text/') || TEXT_EXT.test(f.name) || f.type === 'application/json'
 
 async function pdfText(file: File): Promise<string> {
   const pdfjs = await import('pdfjs-dist')
@@ -26,9 +28,15 @@ export async function readDoc(file: File): Promise<Attachment> {
 
 export function filesPrefix(files?: Attachment[]) {
   if (!files?.length) return ''
-  return files.map((f) => f.kind === 'quote'
-    ? `<quoted_excerpt note="The user is replying to this excerpt of the earlier conversation">\n${f.text}\n</quoted_excerpt>`
-    : `<document name="${f.name}">\n${f.text}\n</document>`).join('\n\n') + '\n\n'
+  return (
+    files
+      .map((f) =>
+        f.kind === 'quote'
+          ? `<quoted_excerpt note="The user is replying to this excerpt of the earlier conversation">\n${f.text}\n</quoted_excerpt>`
+          : `<document name="${f.name}">\n${f.text}\n</document>`,
+      )
+      .join('\n\n') + '\n\n'
+  )
 }
 
 export const approxTokens = (s: string) => Math.ceil(s.length / 3.6)

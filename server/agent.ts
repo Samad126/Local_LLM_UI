@@ -38,13 +38,19 @@ function trusted(req: IncomingMessage) {
 async function safe(root: string, p: unknown): Promise<string> {
   if (typeof p !== 'string') throw new Error('path must be a string')
   const abs = path.resolve(root, p || '.')
-  const outside = (x: string) => { const r = path.relative(root, x); return r.startsWith('..') || path.isAbsolute(r) }
+  const outside = (x: string) => {
+    const r = path.relative(root, x)
+    return r.startsWith('..') || path.isAbsolute(r)
+  }
   if (outside(abs)) throw new Error('Path is outside the workspace')
   // Follow symlinks on the nearest existing ancestor; the not-yet-existing tail can't be a link.
   let existing = abs
   const tail: string[] = []
   for (;;) {
-    try { existing = await fs.realpath(existing); break } catch {
+    try {
+      existing = await fs.realpath(existing)
+      break
+    } catch {
       const up = path.dirname(existing)
       if (up === existing) throw new Error('Path not found')
       tail.unshift(path.basename(existing))
@@ -71,11 +77,16 @@ async function walk(dir: string, root: string, out: string[], limit: number) {
 const APP_PORT = 5173
 const SELF_PIDS = () => new Set([process.pid, process.ppid])
 function killGuard(cmd: string): string | null {
-  const hint = ' Start servers in the background (`cmd & echo $!`) and stop only that exact PID with `kill <pid>`; use a different port than ' + APP_PORT + '.'
+  const hint =
+    ' Start servers in the background (`cmd & echo $!`) and stop only that exact PID with `kill <pid>`; use a different port than ' +
+    APP_PORT +
+    '.'
   if (/\b(pkill|killall)\b/.test(cmd)) return 'Refused: pkill/killall can kill this app (Electron/node).' + hint
   if (/\bfuser\b[^|;&]*-\w*k/.test(cmd)) return 'Refused: fuser -k can kill this app.' + hint
-  if (/\bkill\b[^|;&]*(\$\(|`)/.test(cmd) || /\|\s*xargs\s+(-\S+\s+)*kill/.test(cmd)) return 'Refused: killing by a computed PID list can kill this app.' + hint
-  if (new RegExp(`:${APP_PORT}\\b`).test(cmd) && /\b(kill|lsof|fuser|ss|netstat)\b/.test(cmd)) return `Refused: port ${APP_PORT} belongs to this app.` + hint
+  if (/\bkill\b[^|;&]*(\$\(|`)/.test(cmd) || /\|\s*xargs\s+(-\S+\s+)*kill/.test(cmd))
+    return 'Refused: killing by a computed PID list can kill this app.' + hint
+  if (new RegExp(`:${APP_PORT}\\b`).test(cmd) && /\b(kill|lsof|fuser|ss|netstat)\b/.test(cmd))
+    return `Refused: port ${APP_PORT} belongs to this app.` + hint
   const self = SELF_PIDS()
   for (const m of cmd.matchAll(/\bkill\b([^|;&]*)/g)) {
     for (const n of m[1].match(/-?\d+/g) ?? []) {
@@ -93,12 +104,18 @@ function run(cmd: string, cwd: string, signal: AbortSignal): Promise<string> {
     const child = spawn(cmd, { cwd, shell: true, detached: true, env: process.env })
     let out = ''
     let killed = ''
-    const add = (b: Buffer) => { if (out.length < MAX_OUT * 2) out += b.toString() }
+    const add = (b: Buffer) => {
+      if (out.length < MAX_OUT * 2) out += b.toString()
+    }
     child.stdout.on('data', add)
     child.stderr.on('data', add)
     const kill = (why: string) => {
       killed = why
-      try { process.kill(-child.pid!, 'SIGKILL') } catch { /* already gone */ }
+      try {
+        process.kill(-child.pid!, 'SIGKILL')
+      } catch {
+        /* already gone */
+      }
     }
     const timer = setTimeout(() => kill(`timed out after ${CMD_TIMEOUT / 1000}s`), CMD_TIMEOUT)
     signal.addEventListener('abort', () => kill('cancelled'))
@@ -106,7 +123,10 @@ function run(cmd: string, cwd: string, signal: AbortSignal): Promise<string> {
       clearTimeout(timer)
       resolve(clip(out.trim()) + `\n[exit ${killed ? killed : code}]`)
     })
-    child.on('error', (e) => { clearTimeout(timer); resolve(`Failed to start: ${e.message}`) })
+    child.on('error', (e) => {
+      clearTimeout(timer)
+      resolve(`Failed to start: ${e.message}`)
+    })
   })
 }
 
@@ -115,7 +135,13 @@ async function tool(root: string, name: string, a: any, signal: AbortSignal): Pr
     case 'list_dir': {
       const dir = await safe(root, a.path ?? '.')
       const ents = await fs.readdir(dir, { withFileTypes: true })
-      return ents.filter((e) => !SKIP.has(e.name)).map((e) => (e.isDirectory() ? e.name + '/' : e.name)).sort().join('\n') || '(empty)'
+      return (
+        ents
+          .filter((e) => !SKIP.has(e.name))
+          .map((e) => (e.isDirectory() ? e.name + '/' : e.name))
+          .sort()
+          .join('\n') || '(empty)'
+      )
     }
     case 'read_file': {
       const file = await safe(root, a.path)
@@ -125,14 +151,25 @@ async function tool(root: string, name: string, a: any, signal: AbortSignal): Pr
       const lines = (await fs.readFile(file, 'utf8')).split('\n')
       const start = Math.max(1, Number(a.start_line) || 1)
       const end = Math.min(lines.length, Number(a.end_line) || start + DEFAULT_LINES - 1)
-      const body = lines.slice(start - 1, end).map((l, i) => `${start + i}\t${l}`).join('\n')
-      return clip(body, MAX_READ) + (end < lines.length ? `\n[showing lines ${start}-${end} of ${lines.length}; pass start_line=${end + 1} to continue]` : '')
+      const body = lines
+        .slice(start - 1, end)
+        .map((l, i) => `${start + i}\t${l}`)
+        .join('\n')
+      return (
+        clip(body, MAX_READ) +
+        (end < lines.length
+          ? `\n[showing lines ${start}-${end} of ${lines.length}; pass start_line=${end + 1} to continue]`
+          : '')
+      )
     }
     case 'write_file': {
       const file = await safe(root, a.path)
       // Small models send objects (e.g. for .json files) or use another key name; accept those instead of failing.
       const body = a.content ?? a.contents ?? a.text ?? a.code ?? a.file_content
-      if (body === undefined || body === null) throw new Error(`write_file needs "content": the full file text as a string. You sent keys: ${Object.keys(a).join(', ') || '(none)'}. Call write_file again with path and content.`)
+      if (body === undefined || body === null)
+        throw new Error(
+          `write_file needs "content": the full file text as a string. You sent keys: ${Object.keys(a).join(', ') || '(none)'}. Call write_file again with path and content.`,
+        )
       a.content = typeof body === 'string' ? body : JSON.stringify(body, null, 2)
       await fs.mkdir(path.dirname(file), { recursive: true })
       await fs.writeFile(file, a.content)
@@ -140,19 +177,25 @@ async function tool(root: string, name: string, a: any, signal: AbortSignal): Pr
     }
     case 'edit_file': {
       const file = await safe(root, a.path)
-      if (typeof a.old_string !== 'string' || typeof a.new_string !== 'string') throw new Error('old_string and new_string are required')
+      if (typeof a.old_string !== 'string' || typeof a.new_string !== 'string')
+        throw new Error('old_string and new_string are required')
       if (!a.old_string) throw new Error('old_string must not be empty')
       const src = await fs.readFile(file, 'utf8')
       const count = src.split(a.old_string).length - 1
       if (count === 0) throw new Error('old_string not found. Re-read the file and copy the text exactly.')
-      if (count > 1 && !a.replace_all) throw new Error(`old_string matches ${count} places. Add more context or set replace_all.`)
+      if (count > 1 && !a.replace_all)
+        throw new Error(`old_string matches ${count} places. Add more context or set replace_all.`)
       await fs.writeFile(file, src.split(a.old_string).join(a.new_string))
       return `Edited ${path.relative(root, file)} (${count} replacement${count > 1 ? 's' : ''})`
     }
     case 'search': {
       if (!a.pattern) throw new Error('pattern is required')
       let re: RegExp
-      try { re = new RegExp(a.pattern, 'i') } catch { re = new RegExp(String(a.pattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }
+      try {
+        re = new RegExp(a.pattern, 'i')
+      } catch {
+        re = new RegExp(String(a.pattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+      }
       const base = await safe(root, a.path ?? '.')
       const files: string[] = []
       const st = await fs.stat(base)
@@ -166,9 +209,12 @@ async function tool(root: string, name: string, a: any, signal: AbortSignal): Pr
           const text = await fs.readFile(f, 'utf8')
           if (text.includes('\0')) continue
           text.split('\n').forEach((l, i) => {
-            if (hits.length < 100 && re.test(l)) hits.push(`${path.relative(root, f)}:${i + 1}: ${l.trim().slice(0, 200)}`)
+            if (hits.length < 100 && re.test(l))
+              hits.push(`${path.relative(root, f)}:${i + 1}: ${l.trim().slice(0, 200)}`)
           })
-        } catch { /* unreadable */ }
+        } catch {
+          /* unreadable */
+        }
       }
       return hits.join('\n') || 'No matches'
     }
@@ -186,7 +232,9 @@ async function handler(req: IncomingMessage, res: ServerResponse, next: () => vo
   if (!url.pathname.startsWith('/api/agent/')) return next()
   if (!trusted(req)) return send(res, 403, { error: 'forbidden' })
   const ctrl = new AbortController()
-  res.on('close', () => { if (!res.writableEnded) ctrl.abort() })
+  res.on('close', () => {
+    if (!res.writableEnded) ctrl.abort()
+  })
   try {
     if (req.method !== 'POST') return send(res, 405, { error: 'POST only' })
     const body = await readBody(req)
@@ -197,7 +245,8 @@ async function handler(req: IncomingMessage, res: ServerResponse, next: () => vo
       return send(res, 200, { ok: true, path: await fs.realpath(dir) })
     }
     if (url.pathname === '/api/agent/tool') {
-      if (!path.isAbsolute(String(body.workspace ?? ''))) return send(res, 400, { error: 'workspace must be an absolute path' })
+      if (!path.isAbsolute(String(body.workspace ?? '')))
+        return send(res, 400, { error: 'workspace must be an absolute path' })
       const root = await fs.realpath(body.workspace)
       if (!(await fs.stat(root)).isDirectory()) return send(res, 400, { error: 'workspace is not a directory' })
       try {

@@ -21,9 +21,13 @@ export function App() {
   const toggleDrawer = useStore((s) => s.toggleDrawer)
 
   const activeId = useStore((s) => s.activeId)
-  useEffect(() => { init() }, [init])
+  useEffect(() => {
+    init()
+  }, [init])
   // Previews belong to a chat: close them when switching, opening, creating or deleting chats.
-  useEffect(() => { usePreview.getState().close() }, [activeId, view])
+  useEffect(() => {
+    usePreview.getState().close()
+  }, [activeId, view])
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -35,15 +39,30 @@ export function App() {
     return () => mq.removeEventListener('change', apply)
   }, [theme])
 
-  useEffect(() => { document.documentElement.style.fontSize = fontSize + 'px' }, [fontSize])
+  useEffect(() => {
+    document.documentElement.style.fontSize = fontSize + 'px'
+  }, [fontSize])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.ctrlKey || e.metaKey
-      if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); newChat() }
-      if (mod && e.key === ',') { e.preventDefault(); toggleDrawer() }
-      if (e.key === 'Escape') { if (usePreview.getState().full) usePreview.getState().setFull(false); else toggleDrawer(false) }
-      if (mod && e.key.toLowerCase() === 'b') { e.preventDefault(); const a = useApp.getState(); a.set({ sidebarCollapsed: !a.sidebarCollapsed }) }
+      if (mod && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        newChat()
+      }
+      if (mod && e.key === ',') {
+        e.preventDefault()
+        toggleDrawer()
+      }
+      if (e.key === 'Escape') {
+        if (usePreview.getState().full) usePreview.getState().setFull(false)
+        else toggleDrawer(false)
+      }
+      if (mod && e.key.toLowerCase() === 'b') {
+        e.preventDefault()
+        const a = useApp.getState()
+        a.set({ sidebarCollapsed: !a.sidebarCollapsed })
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

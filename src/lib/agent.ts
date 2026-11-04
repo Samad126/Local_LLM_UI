@@ -15,14 +15,19 @@ export const TOOLS = [
     function: {
       name: 'list_dir',
       description: 'List files and folders in a directory of the workspace.',
-      parameters: { type: 'object', properties: { path: { type: 'string', description: 'Relative directory path, "." for the workspace root' } }, required: [] },
+      parameters: {
+        type: 'object',
+        properties: { path: { type: 'string', description: 'Relative directory path, "." for the workspace root' } },
+        required: [],
+      },
     },
   },
   {
     type: 'function',
     function: {
       name: 'read_file',
-      description: 'Read a text file. Output has line numbers (not part of the file). Use start_line/end_line for large files.',
+      description:
+        'Read a text file. Output has line numbers (not part of the file). Use start_line/end_line for large files.',
       parameters: {
         type: 'object',
         properties: { path: { type: 'string' }, start_line: { type: 'number' }, end_line: { type: 'number' } },
@@ -34,26 +39,45 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'search',
-      description: 'Search file contents with a regex (case-insensitive). Returns path:line: text. Skips node_modules and .git.',
-      parameters: { type: 'object', properties: { pattern: { type: 'string' }, path: { type: 'string', description: 'Optional subfolder or file' } }, required: ['pattern'] },
+      description:
+        'Search file contents with a regex (case-insensitive). Returns path:line: text. Skips node_modules and .git.',
+      parameters: {
+        type: 'object',
+        properties: {
+          pattern: { type: 'string' },
+          path: { type: 'string', description: 'Optional subfolder or file' },
+        },
+        required: ['pattern'],
+      },
     },
   },
   {
     type: 'function',
     function: {
       name: 'write_file',
-      description: 'Create a file or overwrite it completely with the given content. Prefer edit_file for small changes to existing files.',
-      parameters: { type: 'object', properties: { path: { type: 'string' }, content: { type: 'string' } }, required: ['path', 'content'] },
+      description:
+        'Create a file or overwrite it completely with the given content. Prefer edit_file for small changes to existing files.',
+      parameters: {
+        type: 'object',
+        properties: { path: { type: 'string' }, content: { type: 'string' } },
+        required: ['path', 'content'],
+      },
     },
   },
   {
     type: 'function',
     function: {
       name: 'edit_file',
-      description: 'Replace old_string with new_string in a file. old_string must match the file exactly (including whitespace) and be unique unless replace_all is true.',
+      description:
+        'Replace old_string with new_string in a file. old_string must match the file exactly (including whitespace) and be unique unless replace_all is true.',
       parameters: {
         type: 'object',
-        properties: { path: { type: 'string' }, old_string: { type: 'string' }, new_string: { type: 'string' }, replace_all: { type: 'boolean' } },
+        properties: {
+          path: { type: 'string' },
+          old_string: { type: 'string' },
+          new_string: { type: 'string' },
+          replace_all: { type: 'boolean' },
+        },
         required: ['path', 'old_string', 'new_string'],
       },
     },
@@ -62,7 +86,8 @@ export const TOOLS = [
     type: 'function',
     function: {
       name: 'run_command',
-      description: 'Run a shell command in the workspace root (tests, build, git, etc.). 2 minute timeout. Returns combined output and exit code.',
+      description:
+        'Run a shell command in the workspace root (tests, build, git, etc.). 2 minute timeout. Returns combined output and exit code.',
       parameters: { type: 'object', properties: { command: { type: 'string' } }, required: ['command'] },
     },
   },
@@ -75,16 +100,30 @@ export type Verdict = 'auto' | 'ask' | 'block'
 
 // Commands that still need a human even in Auto mode.
 const DANGEROUS = [
-  /\bsudo\b/, /\bmkfs\b/, /\bdd\b[^|;&]*\bof=/, /:\(\)\s*\{/,
+  /\bsudo\b/,
+  /\bmkfs\b/,
+  /\bdd\b[^|;&]*\bof=/,
+  /:\(\)\s*\{/,
   /\brm\b[^|;&]*-\w*[rf]\w*[^|;&]*(\s|^)(\/|~|\$HOME|\.\.|\*)(\s|$|\/)/,
-  /\bgit\s+push\b[^|;&]*(--force|-f\b)/, /\bgit\s+reset\s+--hard/, /\bgit\s+clean\b[^|;&]*-\w*f/,
-  /(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z)?sh\b/, /\bchmod\s+-R\b/, /\bchown\s+-R\b/,
-  />\s*\/(etc|usr|bin|boot|dev)\b/, /\b(shutdown|reboot|poweroff)\b/,
+  /\bgit\s+push\b[^|;&]*(--force|-f\b)/,
+  /\bgit\s+reset\s+--hard/,
+  /\bgit\s+clean\b[^|;&]*-\w*f/,
+  /(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z)?sh\b/,
+  /\bchmod\s+-R\b/,
+  /\bchown\s+-R\b/,
+  />\s*\/(etc|usr|bin|boot|dev)\b/,
+  /\b(shutdown|reboot|poweroff)\b/,
 ]
 export const isDangerous = (cmd: unknown) => typeof cmd === 'string' && DANGEROUS.some((r) => r.test(cmd))
 
 /** Commands that would kill this app (Electron + vite) along with the agent's own processes. */
-export const killsApp = (cmd: unknown) => typeof cmd === 'string' && (/\b(pkill|killall)\b/.test(cmd) || /\bfuser\b[^|;&]*-\w*k/.test(cmd) || /\bkill\b[^|;&]*(\$\(|`)/.test(cmd) || /\|\s*xargs\s+(-\S+\s+)*kill/.test(cmd) || (/:5173\b/.test(cmd) && /\b(kill|lsof|fuser|ss|netstat)\b/.test(cmd)))
+export const killsApp = (cmd: unknown) =>
+  typeof cmd === 'string' &&
+  (/\b(pkill|killall)\b/.test(cmd) ||
+    /\bfuser\b[^|;&]*-\w*k/.test(cmd) ||
+    /\bkill\b[^|;&]*(\$\(|`)/.test(cmd) ||
+    /\|\s*xargs\s+(-\S+\s+)*kill/.test(cmd) ||
+    (/:5173\b/.test(cmd) && /\b(kill|lsof|fuser|ss|netstat)\b/.test(cmd)))
 
 /** What to do with a tool call in a given mode. */
 export function policy(name: string, args: Record<string, any>, mode: AgentMode): Verdict {
@@ -96,10 +135,18 @@ export function policy(name: string, args: Record<string, any>, mode: AgentMode)
   return 'auto'
 }
 
-export const toolsFor = (mode: AgentMode) => (mode === 'plan' ? TOOLS.filter((t) => READ_ONLY.has(t.function.name)) : TOOLS)
+export const toolsFor = (mode: AgentMode) =>
+  mode === 'plan' ? TOOLS.filter((t) => READ_ONLY.has(t.function.name)) : TOOLS
 
-export const agentPrompt = (workspace: string, mode: AgentMode = 'ask') => `You are a coding agent working inside the user's project folder: ${workspace}${mode === 'plan' ? `
-PLAN MODE: you can only read. Explore the code with the tools, then reply with a clear numbered plan (files to change and what to change). Do not try to modify anything.` : ''}
+export const agentPrompt = (
+  workspace: string,
+  mode: AgentMode = 'ask',
+) => `You are a coding agent working inside the user's project folder: ${workspace}${
+  mode === 'plan'
+    ? `
+PLAN MODE: you can only read. Explore the code with the tools, then reply with a clear numbered plan (files to change and what to change). Do not try to modify anything.`
+    : ''
+}
 Use the tools to explore and change files. All paths are relative to that folder.
 Rules:
 - Look before you act: list_dir / search / read_file first. Never guess file contents.
@@ -116,15 +163,23 @@ Rules:
 export function extractTextToolCalls(content: string): { content: string; calls: { name: string; args: any }[] } {
   const calls: { name: string; args: any }[] = []
   // Smaller models (e.g. qwen2.5-coder:7b) reply with the bare JSON, optionally in a code fence, and no tags.
-  const bare = content.trim().replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1').trim()
+  const bare = content
+    .trim()
+    .replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1')
+    .trim()
   if (/^[\[{]/.test(bare) && !content.includes('<tool_call>')) {
     try {
       const j = JSON.parse(bare)
       const list = Array.isArray(j) ? j : [j]
       if (list.length && list.every((c) => c && validCall(c.name))) {
-        return { content: '', calls: list.map((c) => ({ name: c.name, args: parseArgs(c.arguments ?? c.parameters ?? {}) })) }
+        return {
+          content: '',
+          calls: list.map((c) => ({ name: c.name, args: parseArgs(c.arguments ?? c.parameters ?? {}) })),
+        }
       }
-    } catch { /* ordinary text/JSON answer */ }
+    } catch {
+      /* ordinary text/JSON answer */
+    }
   }
   // Weak models also narrate: prose with the call in a ```json fence or on its own line. Run the first one;
   // later steps depend on its result anyway, and the user still approves risky ones.
@@ -132,8 +187,12 @@ export function extractTextToolCalls(content: string): { content: string; calls:
     const asCall = (t: string) => {
       try {
         const j = JSON.parse(t.trim())
-        return j && !Array.isArray(j) && validCall(j.name) ? { name: j.name as string, args: parseArgs(j.arguments ?? j.parameters ?? {}) } : null
-      } catch { return null }
+        return j && !Array.isArray(j) && validCall(j.name)
+          ? { name: j.name as string, args: parseArgs(j.arguments ?? j.parameters ?? {}) }
+          : null
+      } catch {
+        return null
+      }
     }
     for (const m of content.matchAll(/```(?:json|tool_call)?\s*([\s\S]*?)```|^\s*(\{\s*"name"[^\n]*\})\s*$/gm)) {
       const c = asCall(m[1] ?? m[2] ?? '')
@@ -147,7 +206,9 @@ export function extractTextToolCalls(content: string): { content: string; calls:
         calls.push({ name: j.name, args: parseArgs(j.arguments ?? j.parameters ?? {}) })
         return ''
       }
-    } catch { /* malformed: leave visible so the user can see it */ }
+    } catch {
+      /* malformed: leave visible so the user can see it */
+    }
     return _
   })
   return { content: rest.trim(), calls }
@@ -157,24 +218,31 @@ export function extractTextToolCalls(content: string): { content: string; calls:
 export function extractCodeFileWrites(content: string): { content: string; calls: { name: string; args: any }[] } {
   const calls: { name: string; args: any }[] = []
   const pathRe = /(?:^|[\s`'"(*])((?:\.{0,2}\/)?[\w.-]+(?:\/[\w.-]+)*\.[A-Za-z][A-Za-z0-9]{0,5})(?=[\s`'")*:]|$)/g
-  const rest = content.replace(/(^|\n)([^\n]*)\n+```([\w+-]*)[ \t]*\n([\s\S]*?)\n```/g, (whole, lead: string, before: string, lang: string, code: string) => {
-    if (calls.length >= 6 || /^(bash|sh|shell|zsh|console|text|diff|sql)$/i.test(lang)) return whole
-    let path: string | undefined
-    for (const m of before.matchAll(pathRe)) path = m[1]
-    if (!path) {
-      const first = code.split('\n', 1)[0].match(/^(?:\/\/|#|<!--|\/\*)\s*([\w./-]+\.[A-Za-z0-9]{1,6})/)
-      path = first?.[1]
-    }
-    if (!path || /^https?:/.test(path) || path.includes('..') || path.startsWith('/')) return whole
-    calls.push({ name: 'write_file', args: { path: path.replace(/^\.\//, ''), content: code + '\n' } })
-    return lead + before
-  })
+  const rest = content.replace(
+    /(^|\n)([^\n]*)\n+```([\w+-]*)[ \t]*\n([\s\S]*?)\n```/g,
+    (whole, lead: string, before: string, lang: string, code: string) => {
+      if (calls.length >= 6 || /^(bash|sh|shell|zsh|console|text|diff|sql)$/i.test(lang)) return whole
+      let path: string | undefined
+      for (const m of before.matchAll(pathRe)) path = m[1]
+      if (!path) {
+        const first = code.split('\n', 1)[0].match(/^(?:\/\/|#|<!--|\/\*)\s*([\w./-]+\.[A-Za-z0-9]{1,6})/)
+        path = first?.[1]
+      }
+      if (!path || /^https?:/.test(path) || path.includes('..') || path.startsWith('/')) return whole
+      calls.push({ name: 'write_file', args: { path: path.replace(/^\.\//, ''), content: code + '\n' } })
+      return lead + before
+    },
+  )
   return calls.length ? { content: rest.trim(), calls } : { content, calls: [] }
 }
 
 export function parseArgs(a: unknown): Record<string, any> {
   if (typeof a === 'string') {
-    try { return JSON.parse(a) } catch { return {} }
+    try {
+      return JSON.parse(a)
+    } catch {
+      return {}
+    }
   }
   return a && typeof a === 'object' ? (a as Record<string, any>) : {}
 }
@@ -192,7 +260,11 @@ export async function checkWorkspace(workspace: string): Promise<{ ok: boolean; 
   return r.json()
 }
 
-export async function runTool(workspace: string, tc: Pick<ToolCall, 'name' | 'args'>, signal: AbortSignal): Promise<{ ok: boolean; output: string }> {
+export async function runTool(
+  workspace: string,
+  tc: Pick<ToolCall, 'name' | 'args'>,
+  signal: AbortSignal,
+): Promise<{ ok: boolean; output: string }> {
   const r = await fetch('/api/agent/tool', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Agent': '1' },
@@ -207,16 +279,18 @@ export async function runTool(workspace: string, tc: Pick<ToolCall, 'name' | 'ar
 /** Expand an assistant message that used tools into the assistant + tool messages Ollama expects. */
 export function toolMessages(m: Message): any[] {
   const calls = m.toolCalls ?? []
-  const out: any[] = [{
-    role: 'assistant',
-    content: m.content,
-    ...(calls.length ? { tool_calls: calls.map((c) => ({ function: { name: c.name, arguments: c.args } })) } : {}),
-  }]
+  const out: any[] = [
+    {
+      role: 'assistant',
+      content: m.content,
+      ...(calls.length ? { tool_calls: calls.map((c) => ({ function: { name: c.name, arguments: c.args } })) } : {}),
+    },
+  ]
   for (const c of calls) {
     out.push({
       role: 'tool',
       tool_name: c.name,
-      content: c.status === 'denied' ? 'The user denied this action.' : c.result ?? 'No result (cancelled).',
+      content: c.status === 'denied' ? 'The user denied this action.' : (c.result ?? 'No result (cancelled).'),
     })
   }
   return out
@@ -241,7 +315,10 @@ export function compactMessages(msgs: any[], keep = 2): any[] {
       const c = String(m.content ?? '')
       if (fresh.has(i)) return c.length > 6000 ? { ...m, content: clipText(c, 6000) } : m
       if (c.length <= 300) return m
-      return { ...m, content: `[${m.tool_name} output omitted (${c.length} chars). Call the tool again if you still need it.]` }
+      return {
+        ...m,
+        content: `[${m.tool_name} output omitted (${c.length} chars). Call the tool again if you still need it.]`,
+      }
     }
     // An assistant turn is stale when every one of its tool results comes before the first fresh result.
     if (m.role === 'assistant' && m.tool_calls?.length && i + m.tool_calls.length < firstFresh) {

@@ -15,7 +15,12 @@ export function ArtifactsMenu({ chat }: { chat: Chat }) {
   if (!count) return null
   const on = list || hasItem
   return (
-    <Button variant={on ? 'secondary' : 'ghost'} size="sm" title="Files and previews in this chat" onClick={() => (on ? close() : showList())}>
+    <Button
+      variant={on ? 'secondary' : 'ghost'}
+      size="sm"
+      title="Files and previews in this chat"
+      onClick={() => (on ? close() : showList())}
+    >
       <Boxes size={16} /> Artifacts <span className="text-muted-foreground">{count}</span>
     </Button>
   )

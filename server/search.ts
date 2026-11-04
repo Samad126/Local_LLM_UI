@@ -6,10 +6,23 @@ import { lookup } from 'node:dns/promises'
 const UA = 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0'
 
 const decode = (s: string) =>
-  s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;|&#39;/g, "'").replace(/&nbsp;/g, ' ')
-const strip = (s: string) => decode(s.replace(/<[^>]+>/g, '')).replace(/\s+/g, ' ').trim()
+  s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+const strip = (s: string) =>
+  decode(s.replace(/<[^>]+>/g, ''))
+    .replace(/\s+/g, ' ')
+    .trim()
 
-interface Hit { title: string; url: string; snippet: string }
+interface Hit {
+  title: string
+  url: string
+  snippet: string
+}
 
 async function ddg(q: string, n: number): Promise<Hit[]> {
   const res = await fetch('https://html.duckduckgo.com/html/', {
@@ -33,7 +46,8 @@ async function ddg(q: string, n: number): Promise<Hit[]> {
     hits.push({ title: strip(m[2]), url, snippet: strip(sn?.[1] ?? '') })
     if (hits.length >= n) break
   }
-  if (!hits.length && /anomaly|captcha|challenge/i.test(html)) throw new Error('DuckDuckGo is rate-limiting this IP. Try again shortly or use SearXNG.')
+  if (!hits.length && /anomaly|captcha|challenge/i.test(html))
+    throw new Error('DuckDuckGo is rate-limiting this IP. Try again shortly or use SearXNG.')
   return hits
 }
 
@@ -49,8 +63,11 @@ async function searx(base: string, q: string, n: number): Promise<Hit[]> {
 
 function isPrivate(ip: string) {
   return (
-    /^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(ip) || /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
-    ip === '::1' || /^f[cd]/i.test(ip) || /^fe80/i.test(ip)
+    /^(127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(ip) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(ip) ||
+    ip === '::1' ||
+    /^f[cd]/i.test(ip) ||
+    /^fe80/i.test(ip)
   )
 }
 
@@ -59,7 +76,11 @@ async function readable(url: string, max: number) {
   if (!/^https?:$/.test(u.protocol)) throw new Error('Only http(s) URLs')
   const ip = isIP(u.hostname) ? u.hostname : (await lookup(u.hostname)).address
   if (isPrivate(ip)) throw new Error('Refusing to fetch private address')
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html,text/plain' }, redirect: 'follow', signal: AbortSignal.timeout(10000) })
+  const res = await fetch(url, {
+    headers: { 'User-Agent': UA, Accept: 'text/html,text/plain' },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(10000),
+  })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const type = res.headers.get('content-type') ?? ''
   if (!/text\/|html|json|xml/.test(type)) throw new Error('Unsupported content type ' + type)
@@ -70,7 +91,9 @@ async function readable(url: string, max: number) {
     .replace(/<!--[\s\S]*?-->/g, ' ')
   const main = html.match(/<(article|main)[\s\S]*?<\/\1>/i)?.[0] ?? html
   const text = decode(main.replace(/<\/(p|div|li|h\d|tr|br)>|<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, ' '))
-    .replace(/[ \t\f\v]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim()
+    .replace(/[ \t\f\v]+/g, ' ')
+    .replace(/\n\s*\n+/g, '\n')
+    .trim()
   return { title, text: text.slice(0, max) }
 }
 

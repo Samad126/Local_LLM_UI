@@ -17,21 +17,35 @@ async function startServer() {
   // Dev: `npm run desktop:dev` already runs vite on PORT. Otherwise serve dist/ (with the /api/agent and /ollama middleware) ourselves.
   if (process.env.ELECTRON_DEV) return
   const { preview } = await import('vite')
-  server = await preview({ root, configFile: path.join(root, 'vite.config.ts'), preview: { host: '127.0.0.1', port: PORT, strictPort: true, open: false } })
+  server = await preview({
+    root,
+    configFile: path.join(root, 'vite.config.ts'),
+    preview: { host: '127.0.0.1', port: PORT, strictPort: true, open: false },
+  })
 }
 
 async function createWindow() {
   const win = new BrowserWindow({
-    width: 1280, height: 860, title: 'Local LLM', autoHideMenuBar: true, backgroundColor: '#09090b',
+    width: 1280,
+    height: 860,
+    title: 'Local LLM',
+    autoHideMenuBar: true,
+    backgroundColor: '#09090b',
     webPreferences: { preload: path.join(root, 'electron/preload.cjs'), contextIsolation: true, sandbox: true },
   })
-  win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' } })
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
   await win.loadURL(`http://127.0.0.1:${PORT}`)
 }
 
 ipcMain.handle('pick-folder', async (e) => {
   const win = BrowserWindow.fromWebContents(e.sender)
-  const r = await dialog.showOpenDialog(win, { title: 'Choose project folder', properties: ['openDirectory', 'createDirectory'] })
+  const r = await dialog.showOpenDialog(win, {
+    title: 'Choose project folder',
+    properties: ['openDirectory', 'createDirectory'],
+  })
   return r.canceled ? null : r.filePaths[0]
 })
 

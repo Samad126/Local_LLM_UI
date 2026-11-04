@@ -8,7 +8,12 @@ export interface Stats {
   loadDuration?: number
 }
 
-export interface Attachment { name: string; text: string; size: number; kind?: 'quote' | 'paste' }
+export interface Attachment {
+  name: string
+  text: string
+  size: number
+  kind?: 'quote' | 'paste'
+}
 
 export interface ToolCall {
   id: string
