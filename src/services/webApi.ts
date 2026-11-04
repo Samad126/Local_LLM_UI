@@ -1,4 +1,4 @@
-import { useApp } from '../appStore'
+import { useApp } from '@/stores/settingsStore'
 
 export interface Source {
   title: string

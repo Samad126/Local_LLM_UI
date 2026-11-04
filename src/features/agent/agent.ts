@@ -1,4 +1,4 @@
-import type { AgentMode, Message, ToolCall } from '../types'
+import type { AgentMode, Message, ToolCall } from '@/types'
 import { isDangerous, killsApp } from '@shared/commandGuard'
 export { isDangerous, killsApp }
 

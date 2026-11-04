@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FileUp } from 'lucide-react'
-import { useStore } from '../store'
+import { useStore } from '@/stores/chatStore'
 
 /** Full-window drop zone: blurs the app while files are dragged over it, then hands them to the composer. */
 export function DropOverlay() {

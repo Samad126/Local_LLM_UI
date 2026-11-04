@@ -1,4 +1,4 @@
-import type { Prompt } from '../types'
+import type { Prompt } from '@/types'
 
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const matcher = (names: string[]) =>

@@ -1,11 +1,11 @@
 import { useRef } from 'react'
-import { useApp } from '../appStore'
-import { useStore } from '../store'
-import { db } from '../db'
-import { download } from '../lib/util'
+import { useApp } from '@/stores/settingsStore'
+import { useStore } from '@/stores/chatStore'
+import { db } from '@/services/db'
+import { download } from '@/lib/util'
 import { Button } from '@/components/ui/button'
-import { Pick, Check, Range } from './Fields'
-import { Confirm } from './Confirm'
+import { Pick, Check, Range } from '@/components/common/Fields'
+import { Confirm } from '@/components/common/Confirm'
 import { Input } from '@/components/ui/input'
 
 export function AppSettings() {

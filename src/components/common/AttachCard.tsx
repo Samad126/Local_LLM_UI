@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
-import type { Attachment } from '../types'
-import { useLightbox } from '../lightbox'
+import type { Attachment } from '@/types'
+import { useLightbox } from '@/stores/lightboxStore'
 
 /** Compact preview card for a quoted reply, pasted text or document; removable when `onRemove` is given. */
 export function AttachCard({ a, onRemove }: { a: Attachment; onRemove?: () => void }) {

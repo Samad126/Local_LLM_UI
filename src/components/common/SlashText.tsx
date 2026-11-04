@@ -1,5 +1,5 @@
-import { useStore } from '../store'
-import { slashSegments } from '../lib/slash'
+import { useStore } from '@/stores/chatStore'
+import { slashSegments } from '@/lib/slash'
 
 /** Text with saved-prompt `/commands` shown in blue. */
 export function SlashText({ text }: { text: string }) {

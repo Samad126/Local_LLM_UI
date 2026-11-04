@@ -1,5 +1,5 @@
-import { useApp } from '../appStore'
-import type { ModelMeta, Options, RunningModel, TagModel } from '../types'
+import { useApp } from '@/stores/settingsStore'
+import type { ModelMeta, Options, RunningModel, TagModel } from '@/types'
 
 const base = () => useApp.getState().host.replace(/\/$/, '')
 

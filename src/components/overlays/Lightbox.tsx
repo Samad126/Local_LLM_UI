@@ -1,6 +1,6 @@
 import { Copy, Download } from 'lucide-react'
-import { useLightbox } from '../lightbox'
-import { download } from '../lib/util'
+import { useLightbox } from '@/stores/lightboxStore'
+import { download } from '@/lib/util'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 

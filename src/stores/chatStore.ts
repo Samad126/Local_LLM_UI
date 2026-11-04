@@ -1,11 +1,11 @@
 import { create } from 'zustand'
-import { useApp } from './appStore'
-import { db } from './db'
-import { ollama, hasCap } from './lib/ollama'
-import { uid } from './lib/util'
-import { buildContext, shouldSearch, webSearch } from './lib/web'
-import { filesPrefix } from './lib/files'
-import { expandSlash } from './lib/slash'
+import { useApp } from '@/stores/settingsStore'
+import { db } from '@/services/db'
+import { ollama, hasCap } from '@/services/ollama'
+import { uid } from '@/lib/util'
+import { buildContext, shouldSearch, webSearch } from '@/services/webApi'
+import { filesPrefix } from '@/lib/files'
+import { expandSlash } from '@/lib/slash'
 import {
   TOOLS,
   agentPrompt,
@@ -21,7 +21,7 @@ import {
   toolMessages,
   toolsFor,
   validCall,
-} from './lib/agent'
+} from '@/features/agent/agent'
 import type {
   Attachment,
   Chat,
@@ -33,7 +33,7 @@ import type {
   RunningModel,
   TagModel,
   ToolCall,
-} from './types'
+} from '@/types'
 
 export type View = 'chat' | 'models' | 'library' | 'app'
 

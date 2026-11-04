@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
-import { useStore, type View } from '../store'
-import { Icon } from './Icon'
-import { useApp } from '../appStore'
+import { useStore, type View } from '@/stores/chatStore'
+import { Icon } from '@/components/common/Icon'
+import { useApp } from '@/stores/settingsStore'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { timeAgo } from '../lib/util'
+import { timeAgo } from '@/lib/util'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Confirm } from './Confirm'
+import { Confirm } from '@/components/common/Confirm'
 
 const NAV: { v: View; icon: string; label: string }[] = [
   { v: 'chat', icon: 'chat', label: 'Chat' },

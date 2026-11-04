@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { DocKind } from './lib/docs'
+import type { DocKind } from '@/lib/docs'
 
 export type PreviewItem = {
   kind: 'html' | 'svg' | 'markdown' | 'file' | 'image' | DocKind

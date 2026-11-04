@@ -5,10 +5,10 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/github-dark.css'
-import { download } from '../lib/util'
+import { download } from '@/lib/util'
 import { Button } from '@/components/ui/button'
-import { usePreview } from '../previewStore'
-import { normalizeFences, isDocKind, docName, buildDoc, saveBlob, type DocKind } from '../lib/docs'
+import { usePreview } from '@/stores/previewStore'
+import { normalizeFences, isDocKind, docName, buildDoc, saveBlob, type DocKind } from '@/lib/docs'
 
 const EXT: Record<string, string> = {
   javascript: 'js',

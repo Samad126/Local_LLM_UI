@@ -1,4 +1,4 @@
-import type { Attachment } from '../types'
+import type { Attachment } from '@/types'
 
 const TEXT_EXT =
   /\.(txt|md|markdown|csv|tsv|json|jsonl|xml|html?|css|scss|js|jsx|ts|tsx|mjs|py|rb|go|rs|java|kt|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|yaml|yml|toml|ini|cfg|conf|env|log|tex|rst|swift|lua|r|dart|vue|svelte)$/i

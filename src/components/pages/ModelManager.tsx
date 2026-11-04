@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { useStore } from '../store'
-import { ollama, hasCap } from '../lib/ollama'
-import { fmtBytes } from '../lib/util'
-import { Icon } from './Icon'
+import { useStore } from '@/stores/chatStore'
+import { ollama, hasCap } from '@/services/ollama'
+import { fmtBytes } from '@/lib/util'
+import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Pick } from './Fields'
-import { Confirm } from './Confirm'
+import { Pick } from '@/components/common/Fields'
+import { Confirm } from '@/components/common/Confirm'
 
 export function ModelManager() {
   const { models, meta, running, refreshModels, refreshRunning } = useStore()

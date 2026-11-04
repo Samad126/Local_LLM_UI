@@ -1,7 +1,7 @@
-import type { Chat } from '../types'
-import type { PreviewItem } from '../previewStore'
-import { docName, isDocKind, normalizeFences } from './docs'
-import { fileIntent } from '../store'
+import type { Chat } from '@/types'
+import type { PreviewItem } from '@/stores/previewStore'
+import { docName, isDocKind, normalizeFences } from '@/lib/docs'
+import { fileIntent } from '@/stores/chatStore'
 
 export type Artifact = PreviewItem & { id: string }
 

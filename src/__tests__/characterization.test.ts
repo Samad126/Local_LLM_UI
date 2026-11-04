@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { compactMessages, extractCodeFileWrites, extractTextToolCalls, isDangerous, killsApp, parseArgs, policy } from '../lib/agent'
-import { docName, latexToText, normalizeFences, parseCsv, toPreviewMarkdown } from '../lib/docs'
-import { expandSlash, slashSegments } from '../lib/slash'
+import { compactMessages, extractCodeFileWrites, extractTextToolCalls, isDangerous, killsApp, parseArgs, policy } from '@/features/agent/agent'
+import { docName, latexToText, normalizeFences, parseCsv, toPreviewMarkdown } from '@/lib/docs'
+import { expandSlash, slashSegments } from '@/lib/slash'
 
 describe('agent policy', () => {
   it('read-only tools are always auto', () => {

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { Boxes } from 'lucide-react'
-import type { Chat } from '../types'
-import { chatArtifacts } from '../lib/artifacts'
-import { usePreview } from '../previewStore'
+import type { Chat } from '@/types'
+import { chatArtifacts } from '@/features/artifacts/artifacts'
+import { usePreview } from '@/stores/previewStore'
 import { Button } from '@/components/ui/button'
 
 /** Top-bar toggle for the artifacts sidebar. */

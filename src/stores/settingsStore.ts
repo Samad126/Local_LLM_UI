@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ChatSettings } from './types'
+import type { ChatSettings } from '@/types'
 
 export const BASE_SETTINGS: ChatSettings = {
   model: '',
