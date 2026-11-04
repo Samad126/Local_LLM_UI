@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FileUp } from 'lucide-react'
 import { useStore } from '@/stores/chatStore'
+import { useComposerInbox } from '@/stores/composerStore'
 
 /** Full-window drop zone: blurs the app while files are dragged over it, then hands them to the composer. */
 export function DropOverlay() {
@@ -34,7 +35,7 @@ export function DropOverlay() {
       const files = [...e.dataTransfer!.files]
       if (files.length) {
         useStore.getState().setView('chat')
-        setTimeout(() => window.dispatchEvent(new CustomEvent('app:files', { detail: files })), 0)
+        useComposerInbox.getState().addFiles(files)
       }
     }
     const end = () => {

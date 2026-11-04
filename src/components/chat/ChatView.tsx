@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { useStore, useActive } from '@/stores/chatStore'
 import { hasCap } from '@/services/ollama'
+import { displayCtx } from '@/features/chat/context'
 import { Message } from '@/components/chat/Message'
-import { Composer } from '@/components/chat/Composer'
+import { Composer } from '@/components/chat/composer/Composer'
 import { SettingsPanel } from '@/components/pages/SettingsPanel'
 import { ArtifactsMenu } from '@/components/chat/ArtifactsMenu'
 import { PreviewPane } from '@/components/preview/PreviewPane'
@@ -45,7 +46,7 @@ export function ChatView() {
   const m = meta[chat.settings.model]
   const last = [...chat.messages].reverse().find((x) => x.stats?.promptEvalCount)
   const used = last ? (last.stats!.promptEvalCount ?? 0) + (last.stats!.evalCount ?? 0) : 0
-  const ctx = Math.max(chat.settings.options.num_ctx ?? Number(m?.defaults.num_ctx) ?? 0, chat.agent?.on ? 16384 : 0)
+  const ctx = displayCtx(chat, m)
   const pct = ctx ? Math.min(100, (used / ctx) * 100) : 0
 
   const exportMd = () =>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Reply } from 'lucide-react'
+import { useComposerInbox } from '@/stores/composerStore'
 
 /** Floating "Reply" button over any text selected inside a chat message; quotes it into the composer. */
 export function SelectionReply() {
@@ -29,17 +30,19 @@ export function SelectionReply() {
     document.addEventListener('mouseup', up)
     document.addEventListener('keyup', up)
     document.addEventListener('mousedown', hide)
-    document.addEventListener('scroll', () => setPos(null), true)
+    const clear = () => setPos(null)
+    document.addEventListener('scroll', clear, true)
     return () => {
       document.removeEventListener('mouseup', up)
       document.removeEventListener('keyup', up)
       document.removeEventListener('mousedown', hide)
+      document.removeEventListener('scroll', clear, true)
     }
   }, [])
 
   if (!pos) return null
   const reply = () => {
-    window.dispatchEvent(new CustomEvent('app:quote', { detail: pos.text }))
+    useComposerInbox.getState().addQuote(pos.text)
     window.getSelection()?.removeAllRanges()
     setPos(null)
   }

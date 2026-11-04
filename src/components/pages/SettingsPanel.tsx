@@ -4,6 +4,7 @@ import { useApp } from '@/stores/settingsStore'
 import { OPTION_DEFS, hasCap } from '@/services/ollama'
 import type { Options } from '@/types'
 import { Icon } from '@/components/common/Icon'
+import { PromptDialog } from '@/components/common/PromptDialog'
 import { Button } from '@/components/ui/button'
 import { useResizable } from '@/components/common/Resizer'
 import { Pick, Check, Range } from '@/components/common/Fields'
@@ -71,16 +72,11 @@ export function SettingsPanel() {
                 if (p) updateSettings(JSON.parse(JSON.stringify(p.settings)))
               }}
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const n = prompt('Preset name')
-                if (n) savePreset(n)
-              }}
-            >
-              Save
-            </Button>
+            <PromptDialog title="Save preset" label="Preset name" action="Save" onSubmit={savePreset}>
+              <Button variant="outline" size="sm">
+                Save
+              </Button>
+            </PromptDialog>
           </div>
           {presets.length > 0 && (
             <div className="chips">

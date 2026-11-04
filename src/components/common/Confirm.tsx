@@ -11,22 +11,22 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-export function Confirm({
-  title,
-  description,
-  action = 'Continue',
-  onConfirm,
-  children,
-}: {
+interface Props {
   title: string
   description?: string
   action?: string
   onConfirm: () => void
-  children: ReactNode
-}) {
+  /** The element that opens the dialog. Omit to control it with `open`/`onOpenChange`. */
+  children?: ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+/** In-app replacement for window.confirm(). */
+export function Confirm({ title, description, action = 'Continue', onConfirm, children, open, onOpenChange }: Props) {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {children && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>

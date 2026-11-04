@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
+import { parseChatImport } from '@/lib/importChats'
 import { useApp } from '@/stores/settingsStore'
 import { useStore } from '@/stores/chatStore'
 import { db } from '@/services/db'
@@ -12,6 +13,7 @@ export function AppSettings() {
   const app = useApp()
   const { chats, models, online, version, refreshModels, importChats, wipe } = useStore()
   const file = useRef<HTMLInputElement>(null)
+  const [importError, setImportError] = useState('')
 
   return (
     <div className="page">
@@ -200,6 +202,7 @@ export function AppSettings() {
             </Button>
           </Confirm>
         </div>
+        {importError && <p className="warnText">{importError}</p>}
         <input
           ref={file}
           type="file"
@@ -209,11 +212,10 @@ export function AppSettings() {
             const f = e.target.files?.[0]
             if (!f) return
             try {
-              const d = JSON.parse(await f.text())
-              const list = Array.isArray(d) ? d : (d.chats ?? (d.messages ? [d] : []))
-              importChats(list)
-            } catch {
-              alert('Invalid file')
+              importChats(parseChatImport(await f.text()))
+              setImportError('')
+            } catch (err) {
+              setImportError(`Could not import: ${err instanceof Error ? err.message : 'invalid file'}`)
             }
             e.target.value = ''
           }}

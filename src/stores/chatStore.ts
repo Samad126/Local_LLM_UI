@@ -332,3 +332,8 @@ export const useStore = create<State>((set, get) => {
 })
 
 export const useActive = () => useStore((s) => s.chats.find((c) => c.id === s.activeId))
+
+/** Select one value from the active chat without re-rendering on unrelated chat changes. */
+export function useActiveChat<T>(select: (c: Chat | undefined) => T): T {
+  return useStore((s) => select(s.chats.find((c) => c.id === s.activeId)))
+}

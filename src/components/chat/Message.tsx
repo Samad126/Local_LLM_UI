@@ -38,6 +38,7 @@ export const Message = memo(function Message({
   const openImage = useLightbox((s) => s.open)
   const showStats = useApp((s) => s.showStats)
   const [editing, setEditing] = useState(false)
+  const [exportError, setExportError] = useState('')
   const [text, setText] = useState(msg.content)
   const busy = !!streamingId
   const isUser = msg.role === 'user'
@@ -162,7 +163,7 @@ export const Message = memo(function Message({
           <ToolCard key={tc.id} tc={tc} />
         ))}
 
-        {msg.error && <div className="banner bad">{msg.error}</div>}
+        {(msg.error || exportError) && <div className="banner bad">{msg.error || exportError}</div>}
 
         {planMode && !streaming && !isUser && msg.content && !msg.error && (
           <div className="row planbar">
@@ -209,7 +210,11 @@ export const Message = memo(function Message({
                   key={k}
                   title={`Download reply as ${k.toUpperCase()}`}
                   className="exportbtn"
-                  onClick={() => downloadDoc(k, msg.content).catch((e) => alert('Could not build file: ' + e.message))}
+                  onClick={() =>
+                    downloadDoc(k, msg.content).catch((e: Error) =>
+                      setExportError('Could not build file: ' + e.message),
+                    )
+                  }
                 >
                   {k.toUpperCase()}
                 </button>

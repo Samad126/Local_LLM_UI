@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Pick } from '@/components/common/Fields'
 import { Confirm } from '@/components/common/Confirm'
+import { PromptDialog } from '@/components/common/PromptDialog'
 
 export function ModelManager() {
   const { models, meta, running, refreshModels, refreshRunning } = useStore()
@@ -179,20 +180,22 @@ export function ModelManager() {
                         Load
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const n = prompt('Copy as:', m.name + '-copy')
-                        if (n)
-                          run(async () => {
-                            await ollama.copy(m.name, n)
-                            refreshModels()
-                          })
-                      }}
+                    <PromptDialog
+                      title={`Copy ${m.name}`}
+                      label="New model name"
+                      initial={m.name + '-copy'}
+                      action="Copy"
+                      onSubmit={(n) =>
+                        run(async () => {
+                          await ollama.copy(m.name, n)
+                          refreshModels()
+                        })
+                      }
                     >
-                      <Icon n="copy" size={14} />
-                    </Button>
+                      <Button variant="outline" size="sm" title="Copy model">
+                        <Icon n="copy" size={14} />
+                      </Button>
+                    </PromptDialog>
                     <Confirm
                       title={`Delete ${m.name}?`}
                       description="The model files are removed from disk."
