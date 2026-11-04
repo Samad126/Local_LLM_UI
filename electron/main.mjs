@@ -3,7 +3,8 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
-const PORT = 5173
+// Keep in sync with APP_PORT in shared/constants.ts (this plain .mjs file cannot import TypeScript).
+const PORT = Number(process.env.APP_PORT) || 5173
 let server
 
 // Chromium's animated wheel scrolling feels sluggish on Linux, and a software compositor makes it worse.

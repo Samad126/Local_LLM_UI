@@ -1,4 +1,6 @@
 import type { AgentMode, Message, ToolCall } from '../types'
+import { isDangerous, killsApp } from '@shared/commandGuard'
+export { isDangerous, killsApp }
 
 export type { AgentMode }
 export const MODES: AgentMode[] = ['ask', 'edits', 'plan', 'auto']
@@ -97,33 +99,6 @@ const NAMES = new Set(TOOLS.map((t) => t.function.name))
 const READ_ONLY = new Set(['list_dir', 'read_file', 'search'])
 
 export type Verdict = 'auto' | 'ask' | 'block'
-
-// Commands that still need a human even in Auto mode.
-const DANGEROUS = [
-  /\bsudo\b/,
-  /\bmkfs\b/,
-  /\bdd\b[^|;&]*\bof=/,
-  /:\(\)\s*\{/,
-  /\brm\b[^|;&]*-\w*[rf]\w*[^|;&]*(\s|^)(\/|~|\$HOME|\.\.|\*)(\s|$|\/)/,
-  /\bgit\s+push\b[^|;&]*(--force|-f\b)/,
-  /\bgit\s+reset\s+--hard/,
-  /\bgit\s+clean\b[^|;&]*-\w*f/,
-  /(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z)?sh\b/,
-  /\bchmod\s+-R\b/,
-  /\bchown\s+-R\b/,
-  />\s*\/(etc|usr|bin|boot|dev)\b/,
-  /\b(shutdown|reboot|poweroff)\b/,
-]
-export const isDangerous = (cmd: unknown) => typeof cmd === 'string' && DANGEROUS.some((r) => r.test(cmd))
-
-/** Commands that would kill this app (Electron + vite) along with the agent's own processes. */
-export const killsApp = (cmd: unknown) =>
-  typeof cmd === 'string' &&
-  (/\b(pkill|killall)\b/.test(cmd) ||
-    /\bfuser\b[^|;&]*-\w*k/.test(cmd) ||
-    /\bkill\b[^|;&]*(\$\(|`)/.test(cmd) ||
-    /\|\s*xargs\s+(-\S+\s+)*kill/.test(cmd) ||
-    (/:5173\b/.test(cmd) && /\b(kill|lsof|fuser|ss|netstat)\b/.test(cmd)))
 
 /** What to do with a tool call in a given mode. */
 export function policy(name: string, args: Record<string, any>, mode: AgentMode): Verdict {
