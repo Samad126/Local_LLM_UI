@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import {
-  compactMessages,
-  extractCodeFileWrites,
-  extractTextToolCalls,
-  isDangerous,
-  killsApp,
-  parseArgs,
-  policy,
-} from '@/features/agent/agent'
+import { isDangerous, killsApp, policy } from '@/features/agent/policy'
+import { extractCodeFileWrites, extractTextToolCalls, parseArgs } from '@/features/agent/parseCalls'
+import type { OllamaMessage } from '@/types/ollama'
+import { compactMessages } from '@/features/agent/compact'
 import { docName, latexToText, normalizeFences, parseCsv, toPreviewMarkdown } from '@/lib/docs'
 import { expandSlash, slashSegments } from '@/lib/slash'
 
@@ -119,9 +114,9 @@ describe('compactMessages', () => {
       { role: 'assistant', content: '', tool_calls: [{ function: { name: 'read_file', arguments: { path: 'c' } } }] },
       { role: 'tool', tool_name: 'read_file', content: big },
     ]
-    const out = compactMessages(msgs)
+    const out = compactMessages(msgs as OllamaMessage[])
     expect(out[1].content).toMatch(/output omitted/)
-    expect(out[0].tool_calls[0].function.arguments.content).toMatch(/chars omitted/)
+    expect(out[0].tool_calls![0].function.arguments.content).toMatch(/chars omitted/)
     expect(out[3].content).toBe(big)
     expect(out[5].content).toBe(big)
   })

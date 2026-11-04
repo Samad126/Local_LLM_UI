@@ -1,7 +1,7 @@
 import type { Chat } from '@/types'
 import type { PreviewItem } from '@/stores/previewStore'
 import { docName, isDocKind, normalizeFences } from '@/lib/docs'
-import { fileIntent } from '@/stores/chatStore'
+import { fileIntent } from '@/features/chat/fileIntent'
 
 export type Artifact = PreviewItem & { id: string }
 

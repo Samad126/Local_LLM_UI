@@ -1,5 +1,6 @@
 import { useApp } from '@/stores/settingsStore'
 import type { ModelMeta, Options, RunningModel, TagModel } from '@/types'
+import type { ChatChunk, ChatRequest, CreateRequest, ProgressChunk, ShowResponse } from '@/types/ollama'
 
 const base = () => useApp.getState().host.replace(/\/$/, '')
 
@@ -51,13 +52,13 @@ export const ollama = {
   tags: async () => (await j<{ models: TagModel[] }>('/api/tags')).models,
   ps: async () => (await j<{ models: RunningModel[] }>('/api/ps')).models,
   show: async (model: string): Promise<ModelMeta> => {
-    const d = await j<any>('/api/show', { model })
+    const d = await j<ShowResponse>('/api/show', { model })
     const defaults: Record<string, string> = {}
     for (const line of String(d.parameters ?? '').split('\n')) {
       const m = line.trim().match(/^(\S+)\s+(.+)$/)
       if (m && m[1] !== 'stop') defaults[m[1]] = m[2].replace(/^"|"$/g, '')
     }
-    const info = d.model_info ?? {}
+    const info = (d.model_info ?? {}) as Record<string, number>
     const ctxKey = Object.keys(info).find((k) => k.endsWith('.context_length'))
     return {
       capabilities: d.capabilities ?? ['completion'],
@@ -69,10 +70,10 @@ export const ollama = {
       family: d.details?.family,
     }
   },
-  chat: (body: unknown, signal: AbortSignal) => stream<any>('/api/chat', body, signal),
-  chatOnce: (body: unknown) => j<any>('/api/chat', { ...(body as object), stream: false }),
-  pull: (model: string, signal: AbortSignal) => stream<any>('/api/pull', { model, stream: true }, signal),
-  create: (body: unknown) => stream<any>('/api/create', { ...(body as object), stream: true }),
+  chat: (body: ChatRequest, signal: AbortSignal) => stream<ChatChunk>('/api/chat', body, signal),
+  chatOnce: (body: ChatRequest) => j<ChatChunk>('/api/chat', { ...body, stream: false }),
+  pull: (model: string, signal: AbortSignal) => stream<ProgressChunk>('/api/pull', { model, stream: true }, signal),
+  create: (body: CreateRequest) => stream<ProgressChunk>('/api/create', { ...body, stream: true }),
   delete: async (model: string) => {
     const res = await fetch(base() + '/api/delete', {
       method: 'DELETE',

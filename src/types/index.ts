@@ -38,7 +38,7 @@ export interface Message {
   model?: string
   stats?: Stats
   error?: string
-  sources?: { title: string; url: string; snippet?: string }[]
+  sources?: Source[]
   searchQuery?: string
   createdAt: number
 }
@@ -125,4 +125,13 @@ export interface RunningModel {
   size_vram: number
   expires_at: string
   context_length?: number
+}
+export * from './ollama'
+
+/** A web search result, optionally with the fetched page text. */
+export interface Source {
+  title: string
+  url: string
+  snippet?: string
+  text?: string
 }

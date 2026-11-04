@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { CreateRequest } from '@/types/ollama'
 import { useStore } from '@/stores/chatStore'
 import { ollama, hasCap } from '@/services/ollama'
 import { fmtBytes } from '@/lib/format'
@@ -43,7 +44,7 @@ export function ModelManager() {
       setProgress({ status: 'starting', pct: 0 })
       try {
         for await (const c of ollama.pull(name, abort.current.signal)) {
-          setProgress({ status: c.status, pct: c.total ? (c.completed / c.total) * 100 : 0 })
+          setProgress({ status: c.status, pct: c.total ? ((c.completed ?? 0) / c.total) * 100 : 0 })
         }
         setPullName('')
       } finally {
@@ -54,12 +55,12 @@ export function ModelManager() {
 
   const create = () =>
     run(async () => {
-      const parameters: Record<string, any> = {}
+      const parameters: Record<string, string | number> = {}
       for (const line of cr.params.split('\n')) {
         const m = line.trim().match(/^(\w+)\s*[= ]\s*(.+)$/)
         if (m) parameters[m[1]] = isNaN(Number(m[2])) ? m[2] : Number(m[2])
       }
-      const body: any = { model: cr.name, from: cr.from }
+      const body: CreateRequest = { model: cr.name, from: cr.from }
       if (cr.system) body.system = cr.system
       if (cr.template) body.template = cr.template
       if (Object.keys(parameters).length) body.parameters = parameters
