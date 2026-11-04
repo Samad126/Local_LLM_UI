@@ -1,13 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CreateRequest } from '@/types/ollama'
 import { useStore } from '@/stores/chatStore'
 import { ollama, hasCap } from '@/services/ollama'
 import { fmtBytes } from '@/lib/format'
+import { normalizePullName, splitPullNames } from '@/lib/hfModel'
 import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { usePulls } from './usePulls'
 import { Progress } from '@/components/ui/progress'
 import { Pick } from '@/components/common/Fields'
 import { Confirm } from '@/components/common/Confirm'
@@ -16,8 +18,6 @@ import { PromptDialog } from '@/components/common/PromptDialog'
 export function ModelManager() {
   const { models, meta, running, refreshModels, refreshRunning } = useStore()
   const [pullName, setPullName] = useState('')
-  const [progress, setProgress] = useState<{ status: string; pct: number } | null>(null)
-  const abort = useRef<AbortController | null>(null)
   const [detail, setDetail] = useState<string | null>(null)
   const [err, setErr] = useState('')
   const [cr, setCr] = useState({ name: '', from: '', system: '', template: '', params: '' })
@@ -37,22 +37,15 @@ export function ModelManager() {
     }
   }
 
-  const pull = () =>
-    run(async () => {
-      const name = pullName.trim()
-      if (!name) return
-      abort.current = new AbortController()
-      setProgress({ status: 'starting', pct: 0 })
-      try {
-        for await (const c of ollama.pull(name, abort.current.signal)) {
-          setProgress({ status: c.status, pct: c.total ? ((c.completed ?? 0) / c.total) * 100 : 0 })
-        }
-        setPullName('')
-      } finally {
-        setProgress(null)
-        refreshModels()
-      }
-    })
+  const { pulls, start, cancel } = usePulls(refreshModels, setErr)
+
+  const pull = () => {
+    setErr('')
+    const names = splitPullNames(pullName).map(normalizePullName)
+    if (!names.length) return
+    setPullName('')
+    names.forEach((n) => void start(n))
+  }
 
   const create = () =>
     run(async () => {
@@ -83,34 +76,34 @@ export function ModelManager() {
         <h3>Pull a model</h3>
         <div className="row">
           <Input
-            placeholder="e.g. qwen3:8b, qwen2.5vl:7b, llama3.2"
+            placeholder="e.g. qwen3:8b, hf.co/user/repo-GGUF:Q4_K_M, or a Hugging Face URL (several allowed)"
             value={pullName}
             onChange={(e) => setPullName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && pull()}
           />
-          {progress ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => abort.current?.abort()}
-            >
-              Cancel
-            </Button>
-          ) : (
-            <Button variant="default" size="sm" onClick={pull}>
-              Pull
-            </Button>
-          )}
+          <Button variant="default" size="sm" onClick={pull}>
+            Pull
+          </Button>
         </div>
-        {progress && (
-          <div className="flex flex-col gap-1">
-            <Progress value={progress.pct} />
+        {Object.entries(pulls).map(([name, p]) => (
+          <div key={name} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="truncate font-medium">{name}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => cancel(name)}
+              >
+                Cancel
+              </Button>
+            </div>
+            <Progress value={p.pct} />
             <span className="text-xs text-muted-foreground">
-              {progress.status} {progress.pct ? progress.pct.toFixed(0) + '%' : ''}
+              {p.status} {p.pct ? p.pct.toFixed(0) + '%' : ''}
             </span>
           </div>
-        )}
+        ))}
       </section>
 
       <section className="card">
