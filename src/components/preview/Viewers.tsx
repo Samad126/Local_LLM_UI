@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { loadPdfjs } from '@/lib/pdfjs'
 
 /** Renders every page of a PDF blob with pdf.js, fitted to the panel width. */
 export function PdfViewer({ blob }: { blob: Blob }) {
@@ -34,8 +35,7 @@ export function PdfViewer({ blob }: { blob: Blob }) {
     }
     ;(async () => {
       try {
-        const pdfjs = await import('pdfjs-dist')
-        pdfjs.GlobalWorkerOptions.workerSrc = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default
+        const pdfjs = await loadPdfjs()
         doc = await pdfjs.getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise
         if (dead) return
         setPages(doc.numPages)

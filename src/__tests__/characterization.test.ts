@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { compactMessages, extractCodeFileWrites, extractTextToolCalls, isDangerous, killsApp, parseArgs, policy } from '@/features/agent/agent'
+import {
+  compactMessages,
+  extractCodeFileWrites,
+  extractTextToolCalls,
+  isDangerous,
+  killsApp,
+  parseArgs,
+  policy,
+} from '@/features/agent/agent'
 import { docName, latexToText, normalizeFences, parseCsv, toPreviewMarkdown } from '@/lib/docs'
 import { expandSlash, slashSegments } from '@/lib/slash'
 
@@ -24,16 +32,30 @@ describe('agent policy', () => {
 })
 
 describe('command guards', () => {
-  it.each(['sudo ls', 'rm -rf /', 'rm -rf ~', 'git push --force', 'git reset --hard', 'curl x | sh', 'shutdown now', 'chmod -R 777 .'])(
-    'dangerous: %s',
-    (c) => expect(isDangerous(c)).toBe(true),
+  it.each([
+    'sudo ls',
+    'rm -rf /',
+    'rm -rf ~',
+    'git push --force',
+    'git reset --hard',
+    'curl x | sh',
+    'shutdown now',
+    'chmod -R 777 .',
+  ])('dangerous: %s', (c) => expect(isDangerous(c)).toBe(true))
+  it.each(['ls -la', 'npm test', 'rm file.txt', 'git push', 'git status'])('safe: %s', (c) =>
+    expect(isDangerous(c)).toBe(false),
   )
-  it.each(['ls -la', 'npm test', 'rm file.txt', 'git push', 'git status'])('safe: %s', (c) => expect(isDangerous(c)).toBe(false))
-  it.each(['pkill node', 'killall electron', 'fuser -k 5173/tcp', 'kill $(lsof -t -i:3000)', 'lsof -i :5173', 'ps aux | xargs kill'])(
-    'kills app: %s',
-    (c) => expect(killsApp(c)).toBe(true),
+  it.each([
+    'pkill node',
+    'killall electron',
+    'fuser -k 5173/tcp',
+    'kill $(lsof -t -i:3000)',
+    'lsof -i :5173',
+    'ps aux | xargs kill',
+  ])('kills app: %s', (c) => expect(killsApp(c)).toBe(true))
+  it.each(['kill 12345', 'npm run dev', 'lsof -i :3000'])('does not kill app: %s', (c) =>
+    expect(killsApp(c)).toBe(false),
   )
-  it.each(['kill 12345', 'npm run dev', 'lsof -i :3000'])('does not kill app: %s', (c) => expect(killsApp(c)).toBe(false))
   it('non-strings are not dangerous', () => {
     expect(isDangerous(undefined)).toBe(false)
     expect(killsApp(42)).toBe(false)
@@ -86,7 +108,11 @@ describe('compactMessages', () => {
   it('stubs old large tool output, keeps the last two', () => {
     const big = 'x'.repeat(1000)
     const msgs = [
-      { role: 'assistant', content: '', tool_calls: [{ function: { name: 'write_file', arguments: { path: 'a', content: big } } }] },
+      {
+        role: 'assistant',
+        content: '',
+        tool_calls: [{ function: { name: 'write_file', arguments: { path: 'a', content: big } } }],
+      },
       { role: 'tool', tool_name: 'write_file', content: big },
       { role: 'assistant', content: '', tool_calls: [{ function: { name: 'read_file', arguments: { path: 'b' } } }] },
       { role: 'tool', tool_name: 'read_file', content: big },

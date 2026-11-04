@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '@/stores/chatStore'
 import { ollama, hasCap } from '@/services/ollama'
-import { fmtBytes } from '@/lib/util'
+import { fmtBytes } from '@/lib/format'
 import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

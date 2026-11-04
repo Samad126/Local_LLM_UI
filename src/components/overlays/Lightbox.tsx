@@ -1,19 +1,8 @@
 import { Copy, Download } from 'lucide-react'
 import { useLightbox } from '@/stores/lightboxStore'
-import { download } from '@/lib/util'
+import { download, saveBase64Image } from '@/lib/download'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-
-function saveImage(b64: string, name: string) {
-  const bin = atob(b64)
-  const u = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i)
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(new Blob([u], { type: 'image/png' }))
-  a.download = name
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(a.href), 2000)
-}
 
 /** Pop-up viewer for attachments: pasted/uploaded text, reply quotes and images. */
 export function Lightbox() {
@@ -64,7 +53,7 @@ export function Lightbox() {
                   size="sm"
                   onClick={() =>
                     image
-                      ? saveImage(item.body, item.title)
+                      ? saveBase64Image(item.body, item.title)
                       : download(
                           item.title.includes('.') ? item.title : item.title + '.txt',
                           item.body,

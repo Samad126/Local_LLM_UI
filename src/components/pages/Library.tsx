@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '@/stores/chatStore'
-import { uid } from '@/lib/util'
+import { uid } from '@/lib/id'
 import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

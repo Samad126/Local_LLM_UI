@@ -8,7 +8,7 @@ import { Markdown } from '@/components/markdown/Markdown'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/common/Icon'
 import { Maximize2, Minimize2, ArrowLeft, Code2, FileText, Table2, Globe, Image as ImageIcon } from 'lucide-react'
-import { download } from '@/lib/util'
+import { download } from '@/lib/download'
 import { buildDoc, pptxPdf, type DocKind, downloadDoc, isDocKind, toPreviewMarkdown } from '@/lib/docs'
 
 const ICON: Record<string, any> = {

@@ -7,7 +7,7 @@ import { SettingsPanel } from '@/components/pages/SettingsPanel'
 import { ArtifactsMenu } from '@/components/chat/ArtifactsMenu'
 import { PreviewPane } from '@/components/preview/PreviewPane'
 import { Icon } from '@/components/common/Icon'
-import { download } from '@/lib/util'
+import { download } from '@/lib/download'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 

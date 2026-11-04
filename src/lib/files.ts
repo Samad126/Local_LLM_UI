@@ -1,4 +1,5 @@
 import type { Attachment } from '@/types'
+import { loadPdfjs } from '@/lib/pdfjs'
 
 const TEXT_EXT =
   /\.(txt|md|markdown|csv|tsv|json|jsonl|xml|html?|css|scss|js|jsx|ts|tsx|mjs|py|rb|go|rs|java|kt|c|h|cpp|hpp|cs|php|sh|bash|zsh|sql|yaml|yml|toml|ini|cfg|conf|env|log|tex|rst|swift|lua|r|dart|vue|svelte)$/i
@@ -8,9 +9,7 @@ export const isSupportedDoc = (f: File) =>
   f.type === 'application/pdf' || f.type.startsWith('text/') || TEXT_EXT.test(f.name) || f.type === 'application/json'
 
 async function pdfText(file: File): Promise<string> {
-  const pdfjs = await import('pdfjs-dist')
-  const worker = (await import('pdfjs-dist/build/pdf.worker.min.mjs?url')).default
-  pdfjs.GlobalWorkerOptions.workerSrc = worker
+  const pdfjs = await loadPdfjs()
   const pdf = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
   const pages: string[] = []
   for (let i = 1; i <= pdf.numPages; i++) {
@@ -40,3 +39,12 @@ export function filesPrefix(files?: Attachment[]) {
 }
 
 export const approxTokens = (s: string) => Math.ceil(s.length / 3.6)
+
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader()
+    r.addEventListener('load', () => resolve(String(r.result).split(',')[1] ?? ''))
+    r.addEventListener('error', () => reject(r.error))
+    r.readAsDataURL(file)
+  })
+}
