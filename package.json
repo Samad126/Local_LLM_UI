@@ -5,9 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
     "preview": "vite preview",
     "start": "vite build && vite preview --host 127.0.0.1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run typecheck && npm run lint && npm test && npm run format:check",
     "desktop": "vite build && env -u ELECTRON_RUN_AS_NODE electron electron/main.mjs",
     "desktop:dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && env -u ELECTRON_RUN_AS_NODE ELECTRON_DEV=1 electron electron/main.mjs\""
   },
@@ -54,8 +61,11 @@
     "@vitejs/plugin-react": "^6.1.2",
     "concurrently": "^10.0.6",
     "electron": "^45.2.1",
+    "oxlint": "^1.91.0",
+    "prettier": "^3.9.10",
     "typescript": "^7.0.2",
     "vite": "^8.3.5",
+    "vitest": "^5.1.0",
     "wait-on": "^9.5.1"
   },
   "main": "electron/main.mjs"
