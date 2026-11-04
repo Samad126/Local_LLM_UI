@@ -15,7 +15,7 @@ const proxy = {
 }
 
 export default defineConfig({
-  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  resolve: { alias: { '@': path.resolve(import.meta.dirname, 'src') } },
   plugins: [react(), tailwindcss(), webSearch(), agent(), convert()],
   server: { port: 5173, proxy },
   preview: { port: 5173, proxy },
