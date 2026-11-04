@@ -23,5 +23,6 @@ export function cancelSave(id: string) {
 }
 
 export function cancelAllSaves() {
-  for (const id of [...timers.keys()]) cancelSave(id)
+  timers.forEach((t) => clearTimeout(t))
+  timers.clear()
 }

@@ -1,5 +1,4 @@
 import { validCall } from './tools'
-import type { ToolArgs } from './tools'
 
 /** Some Qwen templates emit <tool_call>{...}</tool_call> as plain text instead of structured tool_calls. */
 export function extractTextToolCalls(content: string): { content: string; calls: { name: string; args: any }[] } {
@@ -9,7 +8,7 @@ export function extractTextToolCalls(content: string): { content: string; calls:
     .trim()
     .replace(/^```(?:json)?\s*([\s\S]*?)\s*```$/, '$1')
     .trim()
-  if (/^[\[{]/.test(bare) && !content.includes('<tool_call>')) {
+  if (/^[[{]/.test(bare) && !content.includes('<tool_call>')) {
     try {
       const j = JSON.parse(bare)
       const list = Array.isArray(j) ? j : [j]

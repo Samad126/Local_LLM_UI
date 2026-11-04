@@ -11,7 +11,7 @@ export function ArtifactsMenu({ chat }: { chat: Chat }) {
   const hasItem = usePreview((s) => !!s.item)
   const showList = usePreview((s) => s.showList)
   const close = usePreview((s) => s.close)
-  const count = useMemo(() => chatArtifacts(chat).length, [chat.messages])
+  const count = useMemo(() => chatArtifacts(chat).length, [chat])
   if (!count) return null
   const on = list || hasItem
   return (

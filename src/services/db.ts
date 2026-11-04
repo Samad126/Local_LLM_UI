@@ -1,4 +1,4 @@
-import Dexie, { type Table } from 'dexie'
+import { Dexie, type Table } from 'dexie'
 import type { Chat, Preset, Prompt } from '@/types'
 
 class AppDB extends Dexie {

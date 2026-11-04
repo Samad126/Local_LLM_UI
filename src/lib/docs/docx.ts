@@ -1,4 +1,4 @@
-import { parse, plain, type Node } from './markdown'
+import { parse, type Node } from './markdown'
 import { latexToText, prerenderMath } from './math'
 
 export async function buildDocx(text: string) {
@@ -47,7 +47,7 @@ export async function buildDocx(text: string) {
             : []
     }
   }
-  const block = (n: Node, level = 0, num?: number): any[] => {
+  const block = (n: Node, level = 0): any[] => {
     switch (n.type) {
       case 'heading':
         return [new d.Paragraph({ heading: HEAD[n.depth], children: runs(n), spacing: { before: 240, after: 120 } })]

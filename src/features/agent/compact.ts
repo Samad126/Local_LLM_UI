@@ -49,8 +49,8 @@ export function compactMessages(msgs: OllamaMessage[], keep = 2): OllamaMessage[
     if (m.role === 'assistant' && m.tool_calls?.length && i + m.tool_calls.length < firstFresh) {
       return {
         ...m,
-        tool_calls: m.tool_calls.map((tc: any) => {
-          const a = { ...(tc.function?.arguments ?? {}) }
+        tool_calls: m.tool_calls.map((tc) => {
+          const a = { ...tc.function?.arguments } as Record<string, unknown>
           for (const k of ['content', 'old_string', 'new_string']) {
             if (typeof a[k] === 'string' && a[k].length > 300) a[k] = `[${a[k].length} chars omitted]`
           }
