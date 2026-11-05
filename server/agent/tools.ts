@@ -79,6 +79,11 @@ export async function runTool(root: string, name: string, a: Args, signal: Abort
       if (typeof a.old_string !== 'string' || typeof a.new_string !== 'string')
         throw new Error('old_string and new_string are required')
       if (!a.old_string) throw new Error('old_string must not be empty')
+      // Older tool calls are shrunk to "[N chars omitted]" in the history; models sometimes copy that literally.
+      if (/^\[\d+ chars omitted\]$/.test(a.old_string.trim()) || /^\[\d+ chars omitted\]$/.test(a.new_string.trim()))
+        throw new Error(
+          'old_string/new_string was the placeholder "[N chars omitted]" that only appears in compacted history. Call read_file, then send the real text of the section to replace.',
+        )
       const src = await fs.readFile(file, 'utf8')
       const count = src.split(a.old_string).length - 1
       if (count === 0) throw new Error('old_string not found. Re-read the file and copy the text exactly.')

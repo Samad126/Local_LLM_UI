@@ -21,23 +21,44 @@ export function runCommand(cmd: string, cwd: string, signal: AbortSignal): Promi
     }
     child.stdout.on('data', add)
     child.stderr.on('data', add)
+    let done = false
+    const finish = (text: string) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      resolve(text)
+    }
+    const result = (code: number | null) => clip(out.trim()) + `\n[exit ${killed || code}]`
     const kill = (why: string) => {
       killed = why
       try {
         process.kill(-child.pid!, 'SIGKILL')
       } catch {
-        /* already gone */
+        child.kill('SIGKILL')
       }
+      // A grandchild that escaped the process group can keep the pipes open, so 'close'
+      // may never fire. Don't wait for it: drop the pipes and report after a short grace.
+      setTimeout(() => {
+        child.stdout.destroy()
+        child.stderr.destroy()
+        finish(result(null))
+      }, 1000)
     }
     const timer = setTimeout(() => kill(`timed out after ${CMD_TIMEOUT / 1000}s`), CMD_TIMEOUT)
-    signal.addEventListener('abort', () => kill('cancelled'))
-    child.on('close', (code) => {
-      clearTimeout(timer)
-      resolve(clip(out.trim()) + `\n[exit ${killed || code}]`)
-    })
+    if (signal.aborted) kill('cancelled')
+    else signal.addEventListener('abort', () => kill('cancelled'), { once: true })
+    child.on('close', (code) => finish(result(code)))
+    // `cmd &` leaves a background process holding the output pipes, so 'close' only fires when
+    // it dies. The shell itself has exited: give buffered output a moment, then return.
+    child.on('exit', (code) =>
+      setTimeout(() => {
+        child.stdout.destroy()
+        child.stderr.destroy()
+        finish(result(code))
+      }, 300),
+    )
     child.on('error', (e) => {
-      clearTimeout(timer)
-      resolve(`Failed to start: ${e.message}`)
+      finish(`Failed to start: ${e.message}`)
     })
   })
 }
