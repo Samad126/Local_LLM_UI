@@ -1,6 +1,14 @@
 import type { ThinkMode } from '@/types'
 import type { ReactNode } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
 
@@ -16,10 +24,16 @@ export function Pick({
 }: {
   value: string
   onChange: (v: string) => void
-  options: { value: string; label: ReactNode }[]
+  options: { value: string; label: ReactNode; group?: string }[]
   placeholder?: string
   disabled?: boolean
 }) {
+  const groups = [...new Set(options.map((o) => o.group ?? ''))]
+  const item = (o: (typeof options)[number]) => (
+    <SelectItem key={o.value || NONE} value={o.value || NONE}>
+      {o.label}
+    </SelectItem>
+  )
   return (
     <Select
       value={value === '' ? undefined : value}
@@ -30,11 +44,16 @@ export function Pick({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value || NONE} value={o.value || NONE}>
-            {o.label}
-          </SelectItem>
-        ))}
+        {groups.map((g) =>
+          g ? (
+            <SelectGroup key={g}>
+              <SelectLabel>{g}</SelectLabel>
+              {options.filter((o) => o.group === g).map(item)}
+            </SelectGroup>
+          ) : (
+            options.filter((o) => !o.group).map(item)
+          ),
+        )}
       </SelectContent>
     </Select>
   )

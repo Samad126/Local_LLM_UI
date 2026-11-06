@@ -7,6 +7,7 @@ import { Icon } from '@/components/common/Icon'
 import { PromptDialog } from '@/components/common/PromptDialog'
 import { Button } from '@/components/ui/button'
 import { useResizable } from '@/components/common/Resizer'
+import { isLmStudio, lmId } from '@/services/lmstudio'
 import { Pick, Check, Range, THINK_OPTIONS } from '@/components/common/Fields'
 import type { ThinkMode } from '@/types'
 import { Input } from '@/components/ui/input'
@@ -50,7 +51,15 @@ export function SettingsPanel() {
               ...(!models.find((x) => x.name === s.model)
                 ? [{ value: s.model, label: `${s.model || '—'} (not installed)` }]
                 : []),
-              ...models.map((x) => ({ value: x.name, label: x.name })),
+              ...models.map((x) =>
+                isLmStudio(x.name)
+                  ? { value: x.name, label: lmId(x.name), group: 'LM Studio' }
+                  : {
+                      value: x.name,
+                      label: x.name,
+                      group: models.some((y) => isLmStudio(y.name)) ? 'Ollama' : undefined,
+                    },
+              ),
             ]}
           />
           {m && (
