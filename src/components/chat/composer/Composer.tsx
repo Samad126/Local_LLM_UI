@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useStore, useActiveChat } from '@/stores/chatStore'
 import { useApp } from '@/stores/settingsStore'
 import { useComposerInbox } from '@/stores/composerStore'
+import { useQueue } from '@/stores/queueStore'
 import { hasCap } from '@/services/ollama'
 import { Icon } from '@/components/common/Icon'
 import { Button } from '@/components/ui/button'
@@ -33,6 +34,7 @@ export function Composer() {
   const vision = useStore((s) => hasCap(s.meta[model], 'vision'))
   const sendOnEnter = useApp((s) => s.sendOnEnter)
   const streaming = !!streamingId
+  const queued = useQueue((s) => s.items).filter((i) => i.chatId === chatId)
 
   const ta = useRef<HTMLTextAreaElement>(null)
   const mirror = useRef<HTMLDivElement>(null)
@@ -76,10 +78,12 @@ export function Composer() {
       void compact()
       return
     }
-    if ((!t && att.isEmpty) || streaming || att.busy) return
+    if ((!t && att.isEmpty) || att.busy) return
     if (!model) return att.setErr('Select a model in Settings first.')
     nav.reset()
-    void send(t, att.images, att.docs)
+    if (streaming && chatId) {
+      useQueue.getState().add({ chatId, text: t, images: att.images, files: att.docs })
+    } else void send(t, att.images, att.docs)
     setDraft('')
     att.clear()
   }
@@ -140,6 +144,19 @@ export function Composer() {
             </span>
           )}
           {att.err && <span className="warnText">{att.err}</span>}
+        </div>
+      )}
+      {queued.length > 0 && (
+        <div className="queuelist">
+          {queued.map((q) => (
+            <div key={q.id} className="queueitem">
+              <span className="muted">Queued</span>
+              <span className="queuetext">{q.text || `${q.images.length + q.files.length} attachment(s)`}</span>
+              <button className="queuex" title="Remove from queue" onClick={() => useQueue.getState().remove(q.id)}>
+                ×
+              </button>
+            </div>
+          ))}
         </div>
       )}
       <div className="composerbox">
@@ -211,7 +228,7 @@ export function Composer() {
             onChange={(e) => e.target.files && void att.addFiles(e.target.files)}
           />
           <span className="spacer" />
-          {streaming ? (
+          {streaming && (
             <Button
               variant="outline"
               size="sm"
@@ -221,13 +238,14 @@ export function Composer() {
             >
               <Icon n="stop" />
             </Button>
-          ) : (
+          )}
+          {(!streaming || draft.trim() || !att.isEmpty) && (
             <Button
               size="icon"
               className="rounded-full"
               onClick={submit}
               disabled={(!draft.trim() && att.isEmpty) || att.busy}
-              title="Send"
+              title={streaming ? 'Queue message (sent when the reply finishes)' : 'Send'}
             >
               <Icon n="send" />
             </Button>

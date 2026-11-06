@@ -1628,3 +1628,36 @@ kbd {
   color: var(--muted-foreground);
   font-size: 0.8rem;
 }
+
+/* queued messages */
+.queuelist {
+  max-width: 860px;
+  margin: 0 auto 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+.queueitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.queuetext {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.queuex {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+}

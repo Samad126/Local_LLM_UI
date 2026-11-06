@@ -5,6 +5,7 @@ import { lmstudio } from '@/services/lmstudio'
 import { ollama } from '@/services/ollama'
 import { cancelAllSaves, cancelSave, saveChat } from '@/services/persistence'
 import { uid } from '@/lib/id'
+import { useQueue } from '@/stores/queueStore'
 import { answerApproval, resetAllowed, type Answer } from '@/features/agent/approvals'
 import { generate } from '@/features/chat/generate'
 import { summarize } from '@/features/chat/summarize'
@@ -89,6 +90,30 @@ export const useStore = create<State>((set, get) => {
     setRun: (streamingId, abort) => set({ streamingId, abort }),
     setStatus: (status) => set({ status }),
     refreshRunning: () => void get().refreshRunning(),
+  }
+
+  /** Append a user message to a chat and run the model; then send whatever was queued meanwhile. */
+  const sendTo = async (chatId: string, text: string, images: string[], files: Attachment[]) => {
+    if (get().streamingId || !get().chats.some((c) => c.id === chatId)) return
+    const m: Message = {
+      id: uid(),
+      role: 'user',
+      content: text,
+      images: images.length ? images : undefined,
+      files: files.length ? files : undefined,
+      createdAt: Date.now(),
+    }
+    get().patchChat(chatId, (x) => ({ messages: [...x.messages, m] }))
+    await generate(host, chatId)
+    await drainQueue()
+  }
+  const drainQueue = async () => {
+    if (get().streamingId) return
+    const q = useQueue.getState()
+    const next = q.items.find((i) => get().chats.some((c) => c.id === i.chatId))
+    if (!next) return q.items.length ? useQueue.setState({ items: [] }) : undefined
+    q.remove(next.id)
+    await sendTo(next.chatId, next.text, next.images, next.files)
   }
 
   return {
@@ -202,6 +227,7 @@ export const useStore = create<State>((set, get) => {
 
     deleteChat: (id) => {
       cancelSave(id)
+      useQueue.getState().clearChat(id)
       void db.chats.delete(id)
       set((s) => {
         const chats = s.chats.filter((c) => c.id !== id)
@@ -212,17 +238,7 @@ export const useStore = create<State>((set, get) => {
 
     send: async (text, images, files) => {
       const c = active()
-      if (!c || get().streamingId) return
-      const m: Message = {
-        id: uid(),
-        role: 'user',
-        content: text,
-        images: images.length ? images : undefined,
-        files: files?.length ? files : undefined,
-        createdAt: Date.now(),
-      }
-      get().patchChat(c.id, (x) => ({ messages: [...x.messages, m] }))
-      await generate(host, c.id)
+      if (c) await sendTo(c.id, text, images, files ?? [])
     },
 
     regenerate: async (messageId) => {
@@ -237,6 +253,7 @@ export const useStore = create<State>((set, get) => {
       }
       get().patchChat(c.id, () => ({ messages: msgs }))
       await generate(host, c.id)
+      await drainQueue()
     },
 
     editAndResend: async (messageId, text) => {
@@ -247,6 +264,7 @@ export const useStore = create<State>((set, get) => {
       const msgs = c.messages.slice(0, i + 1).map((m, k) => (k === i ? { ...m, content: text } : m))
       get().patchChat(c.id, () => ({ messages: msgs }))
       await generate(host, c.id)
+      await drainQueue()
     },
 
     deleteMessage: (messageId) => {
