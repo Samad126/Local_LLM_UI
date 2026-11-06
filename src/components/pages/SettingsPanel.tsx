@@ -8,7 +8,8 @@ import { PromptDialog } from '@/components/common/PromptDialog'
 import { Button } from '@/components/ui/button'
 import { useResizable } from '@/components/common/Resizer'
 import { isLmStudio, lmId } from '@/services/lmstudio'
-import { Pick, Check, Range, THINK_OPTIONS } from '@/components/common/Fields'
+import { Pick, Check, Range, THINK_OPTIONS, LEVEL_THINK_OPTIONS } from '@/components/common/Fields'
+import { isLevelThinker } from '@/features/chat/buildRequest'
 import type { ThinkMode } from '@/types'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -125,9 +126,9 @@ export function SettingsPanel() {
           Thinking
           <Pick
             disabled={!hasCap(m, 'thinking')}
-            value={s.think}
+            value={isLevelThinker(s.model) && (s.think === 'off' || s.think === 'on') ? 'default' : s.think}
             onChange={(v) => updateSettings({ think: v as ThinkMode })}
-            options={THINK_OPTIONS}
+            options={isLevelThinker(s.model) ? LEVEL_THINK_OPTIONS : THINK_OPTIONS}
           />
           {!hasCap(m, 'thinking') && <small className="muted">Not supported by this model</small>}
         </label>

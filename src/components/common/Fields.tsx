@@ -98,6 +98,12 @@ export const THINK_OPTIONS: { value: ThinkMode; label: string }[] = [
   { value: 'on', label: 'On' },
   { value: 'off', label: 'Off (faster)' },
 ]
+/** gpt-oss has no "off": the default is its minimum level. */
+export const LEVEL_THINK_OPTIONS: { value: ThinkMode; label: string }[] = [
+  { value: 'default', label: 'Minimum (low)' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+]
 export const SEARCH_ENGINE_OPTIONS = [
   { value: 'ddg', label: 'DuckDuckGo (no key)' },
   { value: 'searxng', label: 'SearXNG (self-hosted)' },

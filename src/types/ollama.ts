@@ -19,7 +19,7 @@ export interface ChatRequest {
   messages: OllamaMessage[]
   stream?: boolean
   options?: Options
-  think?: boolean
+  think?: boolean | 'low' | 'medium' | 'high'
   keep_alive?: string | number
   format?: 'json' | Record<string, unknown>
   tools?: unknown[]

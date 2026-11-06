@@ -4,10 +4,18 @@ import { toolMessages } from '@/features/agent/compact'
 import { filesPrefix } from '@/lib/files'
 import { expandSlash } from '@/lib/slash'
 import { hasCap } from '@/services/ollama'
-import type { AgentMode, Chat, Message, ModelMeta, Prompt } from '@/types'
+import type { AgentMode, Chat, ThinkMode, Message, ModelMeta, Prompt } from '@/types'
 import type { ChatRequest, OllamaMessage } from '@/types/ollama'
 import { fileIntent } from './fileIntent'
 import { FILE_HINT, outputFormatReminder } from './prompts'
+
+/** gpt-oss can't disable thinking and ignores booleans; it only takes a level. */
+export const isLevelThinker = (model: string) => /gpt-oss/i.test(model)
+/** Request value for `think`. Level-only models use the minimum level unless thinking is explicitly on. */
+export const thinkValue = (model: string, mode: ThinkMode): ChatRequest['think'] => {
+  if (!isLevelThinker(model)) return mode === 'default' ? undefined : mode !== 'off'
+  return mode === 'high' || mode === 'medium' ? mode : 'low'
+}
 
 export const isAgentOn = (chat: Chat) => !!chat.agent?.on && !!chat.agent.workspace
 
@@ -70,7 +78,10 @@ export function buildRequest(chat: Chat, msgs: OllamaMessage[], meta: ModelMeta 
       /* ignore invalid schema */
     }
   }
-  if (hasCap(meta, 'thinking') && s.think !== 'default') body.think = s.think === 'on'
+  if (hasCap(meta, 'thinking')) {
+    const t = thinkValue(s.model, s.think)
+    if (t !== undefined) body.think = t
+  }
   if (isAgentOn(chat)) {
     delete body.format
     body.options = { ...body.options, num_ctx: Math.max(body.options?.num_ctx ?? 0, AGENT_MIN_CTX) }

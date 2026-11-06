@@ -65,7 +65,7 @@ export type Options = Partial<{
   penalize_newline: boolean
 }>
 
-export type ThinkMode = 'default' | 'on' | 'off'
+export type ThinkMode = 'default' | 'on' | 'off' | 'medium' | 'high'
 
 export interface ChatSettings {
   model: string

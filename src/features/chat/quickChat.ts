@@ -1,3 +1,4 @@
+import { thinkValue } from './buildRequest'
 import { hasCap, ollama } from '@/services/ollama'
 import type { ModelMeta } from '@/types'
 
@@ -17,7 +18,7 @@ export async function quickChat(o: QuickChatOpts): Promise<string> {
     model: o.model,
     messages: [{ role: 'user', content: o.prompt }],
     options: { num_predict: o.numPredict, temperature: o.temperature, num_ctx: o.numCtx },
-    ...(hasCap(o.meta, 'thinking') ? { think: false } : {}),
+    ...(hasCap(o.meta, 'thinking') ? { think: thinkValue(o.model, 'off') } : {}),
     keep_alive: o.keepAlive || undefined,
   })
   return String(r.message?.content ?? '').trim()
