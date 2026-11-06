@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useApp } from '@/stores/settingsStore'
 import { db } from '@/services/db'
+import { lmstudio } from '@/services/lmstudio'
 import { ollama } from '@/services/ollama'
 import { cancelAllSaves, cancelSave, saveChat } from '@/services/persistence'
 import { uid } from '@/lib/id'
@@ -126,7 +127,8 @@ export const useStore = create<State>((set, get) => {
 
     refreshModels: async () => {
       try {
-        const [v, models] = await Promise.all([ollama.version(), ollama.tags()])
+        const [v, tags, lm] = await Promise.all([ollama.version(), ollama.tags(), lmstudio.models()])
+        const models = [...tags, ...lm]
         set({ online: true, version: v.version, models })
         const metas = await Promise.all(
           models.map((m) =>

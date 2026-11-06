@@ -1,5 +1,6 @@
 import { useApp } from '@/stores/settingsStore'
 import type { ModelMeta, Options, RunningModel, TagModel } from '@/types'
+import { isLmStudio, lmstudio } from './lmstudio'
 import type { ChatChunk, ChatRequest, CreateRequest, ProgressChunk, ShowResponse } from '@/types/ollama'
 
 const base = () => useApp.getState().host.replace(/\/$/, '')
@@ -52,6 +53,7 @@ export const ollama = {
   tags: async () => (await j<{ models: TagModel[] }>('/api/tags')).models,
   ps: async () => (await j<{ models: RunningModel[] }>('/api/ps')).models,
   show: async (model: string): Promise<ModelMeta> => {
+    if (isLmStudio(model)) return { capabilities: ['completion', 'tools'], defaults: {} }
     const d = await j<ShowResponse>('/api/show', { model })
     const defaults: Record<string, string> = {}
     for (const line of String(d.parameters ?? '').split('\n')) {
@@ -70,8 +72,10 @@ export const ollama = {
       family: d.details?.family,
     }
   },
-  chat: (body: ChatRequest, signal: AbortSignal) => stream<ChatChunk>('/api/chat', body, signal),
-  chatOnce: (body: ChatRequest) => j<ChatChunk>('/api/chat', { ...body, stream: false }),
+  chat: (body: ChatRequest, signal: AbortSignal) =>
+    isLmStudio(body.model) ? lmstudio.chat(body, signal) : stream<ChatChunk>('/api/chat', body, signal),
+  chatOnce: (body: ChatRequest) =>
+    isLmStudio(body.model) ? lmstudio.chatOnce(body) : j<ChatChunk>('/api/chat', { ...body, stream: false }),
   pull: (model: string, signal: AbortSignal) => stream<ProgressChunk>('/api/pull', { model, stream: true }, signal),
   create: (body: CreateRequest) => stream<ProgressChunk>('/api/create', { ...body, stream: true }),
   delete: async (model: string) => {
@@ -90,8 +94,10 @@ export const ollama = {
     })
     if (!res.ok) throw new Error(await res.text())
   },
-  unload: (model: string) => j('/api/chat', { model, messages: [], keep_alive: 0 }),
-  load: (model: string, keep_alive = '30m') => j('/api/chat', { model, messages: [], keep_alive }),
+  unload: (model: string) =>
+    isLmStudio(model) ? Promise.resolve() : j('/api/chat', { model, messages: [], keep_alive: 0 }),
+  load: (model: string, keep_alive = '30m') =>
+    isLmStudio(model) ? lmstudio.load(model) : j('/api/chat', { model, messages: [], keep_alive }),
 }
 
 export interface OptionDef {
